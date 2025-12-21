@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(move extract_learning_objectives_event94.py claude-work )",
+      "Bash(move event94_learning_objectives.json claude-work )",
+      "Bash(move event94_learning_objectives.txt claude-work)"
+    ],
+    "defaultMode": "bypassPermissions",
+    "deny": [],
+    "ask": []
+  }
+}
