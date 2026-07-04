@@ -132,11 +132,15 @@ up object/component references (has to be done via `execute_code` + SerializedOb
 1. `.claude/CLAUDE.md` implementation counts are stale vs. actual file counts
    (says 22+15; actual = 50 tool files). Refresh when doing roadmap.
 2. Known code gap: `update_component` only sets primitive fields — can't wire object/
-   component references (must use `execute_code` + SerializedObject). Roadmap candidate.
-3. No automated tests / CI yet. No Unity test project set up to validate tools live.
+   component references (must use `execute_code` + SerializedObject). = **P1.1**, next up.
+3. P0b structuredContent not yet validated against a LIVE Unity response (see warning at
+   top). Low risk (permissive schemas). Do on next testbed session.
+4. UPM manifest had a dangling `samples[]` → `Samples~/XrealDemo` (folder never existed);
+   **removed** 2026-07-04. If we want a real in-package demo, build a `Samples~/XrealDemo`
+   scene (hand tracking + spatial anchors) and re-add the samples entry. Backlog, not urgent.
 
 ## Next steps
-- [ ] (in flight) Collect 3 research agents' findings → write ROADMAP.md (task #3).
-- [ ] Refresh `.claude/CLAUDE.md` tracker counts.
-- [ ] Decide whether to set up a Unity test project + CI to validate tools.
-- [ ] Consider MCP SDK upgrade (currently ^1.7.0) once protocol research lands.
+- [ ] **P1.1** — update_component: set object/component references (top pick).
+- [ ] Live-validate P0b structuredContent on the McpTestbed when Unity is next open.
+- [ ] Refresh `.claude/CLAUDE.md` tracker counts (says 22+15; actual 50 tool files).
+- [ ] (backlog) Build a real `Samples~/XrealDemo` scene, then re-add samples[] to UPM manifest.
