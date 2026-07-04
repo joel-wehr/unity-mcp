@@ -25,12 +25,5 @@
   "type": "tool",
   "dependencies": {
     "com.unity.ugui": "2.0.0"
-  },
-  "samples": [
-    {
-      "displayName": "XREAL Demo Scene",
-      "description": "Sample scene with hand tracking and spatial anchors",
-      "path": "Samples~/XrealDemo"
-    }
-  ]
+  }
 }
