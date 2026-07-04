@@ -1,0 +1,23 @@
+# Normalize line endings: store text as LF in the repo, let git handle checkout.
+* text=auto eol=lf
+
+# Explicit text types
+*.ts   text eol=lf
+*.js   text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.cs   text eol=lf
+*.meta text eol=lf
+*.asmdef text eol=lf
+*.yml  text eol=lf
+
+# Binary assets (never normalize)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.unity binary
+*.prefab binary
+*.asset binary
+*.fbx binary
+*.dll binary
