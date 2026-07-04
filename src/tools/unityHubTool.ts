@@ -7,6 +7,7 @@ import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import { getToolAnnotations } from "../utils/toolAnnotations.js";
 
 const execAsync = promisify(exec);
@@ -14,7 +15,9 @@ const execAsync = promisify(exec);
 // Constants for the tool
 const toolName = 'unity_hub';
 const toolDescription = `Controls Unity Hub to create projects, manage installations, and open projects.
-This tool works INDEPENDENTLY of the Unity Editor connection - it uses Unity Hub CLI.
+This tool works INDEPENDENTLY of the Unity Editor connection. Editor installs use the
+Unity Hub CLI; project creation and template listing use the installed Editor and its
+bundled templates directly (the Hub CLI has no create/templates subcommands).
 
 Actions:
 - create_project: Create a new Unity project
@@ -129,7 +132,123 @@ async function executeHubCommand(hubPath: string, args: string[], logger: Logger
   }
 }
 
-// Launch Unity Editor with a project (non-blocking)
+interface HubEditor {
+  version: string;
+  architecture?: string;
+  location: string;
+}
+
+// List installed editors via `editors -i --json`. The Hub prints some GPU/cache
+// noise to stderr; the JSON array we want is on stdout. We still slice out the
+// first [...] to be robust against any stray leading output.
+async function getInstalledEditors(hubPath: string, logger: Logger): Promise<HubEditor[]> {
+  const out = await executeHubCommand(hubPath, ['editors', '-i', '--json'], logger);
+  const start = out.indexOf('[');
+  const end = out.lastIndexOf(']');
+  if (start === -1 || end === -1 || end < start) {
+    return [];
+  }
+  try {
+    return JSON.parse(out.slice(start, end + 1));
+  } catch (e) {
+    logger.warn(`Could not parse Unity Hub editors JSON: ${e instanceof Error ? e.message : String(e)}`);
+    return [];
+  }
+}
+
+// Resolve the Unity Editor executable path for a given version (exact match first,
+// then a prefix match so "6000.5" can resolve "6000.5.2f1").
+async function resolveEditorExecutable(hubPath: string, editorVersion: string, logger: Logger): Promise<string> {
+  const editors = await getInstalledEditors(hubPath, logger);
+  const match = editors.find(e => e.version === editorVersion)
+    || editors.find(e => e.version?.startsWith(editorVersion));
+  if (match?.location && fs.existsSync(match.location)) {
+    return match.location;
+  }
+  throw new McpUnityError(
+    ErrorType.VALIDATION,
+    `Unity Editor version ${editorVersion} not found or not installed. Use list_installations to see available versions.`
+  );
+}
+
+// Locate the bundled project-templates directory for an installed editor.
+function getProjectTemplatesDir(editorExe: string): string {
+  if (process.platform === 'darwin') {
+    // .../Unity.app/Contents/MacOS/Unity -> .../Unity.app/Contents/Resources/...
+    const contents = path.dirname(path.dirname(editorExe));
+    return path.join(contents, 'Resources', 'PackageManager', 'ProjectTemplates');
+  }
+  // Windows/Linux: .../Editor/Unity(.exe) -> .../Editor/Data/Resources/...
+  return path.join(path.dirname(editorExe), 'Data', 'Resources', 'PackageManager', 'ProjectTemplates');
+}
+
+// Parse a template tgz filename like "com.unity.template.3d-cross-platform-17.0.14.tgz"
+// into { id: "com.unity.template.3d-cross-platform", version: "17.0.14" }.
+function parseTemplateName(file: string): { id: string; version: string } | null {
+  const m = file.match(/^(.*)-(\d[0-9A-Za-z.\-]*)\.tgz$/);
+  if (!m) return null;
+  return { id: m[1], version: m[2] };
+}
+
+// Resolve a `tar` that can extract .tgz files with Windows drive-letter paths.
+// On Windows, GNU tar (often first on PATH via Git) rejects "C:\..." with
+// "Cannot connect to C: resolve failed", so prefer the bundled bsdtar at
+// System32\tar.exe (present on Windows 10 1803+ / 11). Elsewhere, use PATH `tar`.
+function tarExecutable(): string {
+  if (process.platform === 'win32') {
+    const bsdtar = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe');
+    if (fs.existsSync(bsdtar)) {
+      return `"${bsdtar}"`;
+    }
+  }
+  return 'tar';
+}
+
+// Instantiate a project from a bundled template by extracting its ProjectData~
+// skeleton (this is exactly what Unity Hub does; no Editor run required).
+// Returns true if the template was found and extracted.
+async function createFromTemplate(templatesDir: string, template: string, projectPath: string, logger: Logger): Promise<boolean> {
+  if (!fs.existsSync(templatesDir)) {
+    return false;
+  }
+  const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.tgz'));
+  const tgz = files.find(f => parseTemplateName(f)?.id === template)
+    || files.find(f => f.startsWith(`${template}-`));
+  if (!tgz) {
+    return false;
+  }
+  const tgzPath = path.join(templatesDir, tgz);
+  fs.mkdirSync(projectPath, { recursive: true });
+  // --strip-components=2 drops the "package/ProjectData~/" prefix so
+  // Assets/Packages/ProjectSettings land at the project root.
+  const command = `${tarExecutable()} -xzf "${tgzPath}" -C "${projectPath}" --strip-components=2 "package/ProjectData~"`;
+  logger.info(`Extracting template ${tgz} into ${projectPath}`);
+  await execAsync(command, { timeout: 120000, windowsHide: true });
+  return fs.existsSync(path.join(projectPath, 'Assets'));
+}
+
+// Create a bare (default) project by invoking the Editor binary directly.
+// Unity Hub's CLI has no `create` subcommand, so this is the reliable path.
+async function runEditorCreateProject(editorExe: string, projectPath: string, logger: Logger): Promise<void> {
+  const parent = path.dirname(projectPath);
+  if (parent && !fs.existsSync(parent)) {
+    fs.mkdirSync(parent, { recursive: true });
+  }
+  const logFile = path.join(os.tmpdir(), `unity-createproject-${path.basename(projectPath)}.log`);
+  const command = `"${editorExe}" -batchmode -createProject "${projectPath}" -quit -logFile "${logFile}"`;
+  logger.info(`Creating project via Editor: ${command}`);
+  try {
+    await execAsync(command, { timeout: 300000, windowsHide: true });
+  } catch (error: any) {
+    // Unity can exit non-zero even when the project was created; we verify by
+    // checking for the Assets/ folder at the call site rather than trusting exit code.
+    logger.warn(`Editor -createProject exited non-zero (will verify by directory): ${error.message}`);
+  }
+}
+
+// Launch the Unity Editor with a project. Resolves the correct editor version
+// (from the argument, or the project's own ProjectVersion.txt) and launches the
+// editor binary directly.
 async function launchUnityEditor(
   hubPath: string,
   projectPath: string,
@@ -137,53 +256,40 @@ async function launchUnityEditor(
   waitForExit: boolean,
   logger: Logger
 ): Promise<string> {
-  // First, we need to find the editor path
-  let editorPath: string;
-
-  if (editorVersion) {
-    // Get editor path for specific version
-    const installsOutput = await executeHubCommand(hubPath, ['editors', '-i'], logger);
-    const lines = installsOutput.split('\n');
-
-    for (const line of lines) {
-      if (line.includes(editorVersion)) {
-        // Parse the path from the output
-        const match = line.match(/installed at (.+)/i);
-        if (match) {
-          editorPath = match[1].trim();
-          break;
-        }
+  let version = editorVersion;
+  if (!version) {
+    const projectVersionFile = path.join(projectPath, 'ProjectSettings', 'ProjectVersion.txt');
+    if (fs.existsSync(projectVersionFile)) {
+      const m = fs.readFileSync(projectVersionFile, 'utf-8').match(/m_EditorVersion:\s*(\S+)/);
+      if (m) {
+        version = m[1];
       }
     }
-
-    if (!editorPath!) {
-      throw new McpUnityError(
-        ErrorType.VALIDATION,
-        `Unity Editor version ${editorVersion} not found. Use list_installations to see available versions.`
-      );
-    }
-  } else {
-    // Use Unity Hub to open with default/project version
-    const args = ['--projectPath', `"${projectPath}"`];
-
-    if (waitForExit) {
-      await executeHubCommand(hubPath, args, logger);
-      return `Project opened and Unity Editor has exited: ${projectPath}`;
-    } else {
-      // Non-blocking launch
-      const quotedHubPath = `"${hubPath}"`;
-      spawn(quotedHubPath, ['--', '--headless', ...args], {
-        detached: true,
-        stdio: 'ignore',
-        shell: true,
-        windowsHide: true
-      }).unref();
-
-      return `Launching Unity Editor with project: ${projectPath}`;
-    }
+  }
+  if (!version) {
+    throw new McpUnityError(
+      ErrorType.VALIDATION,
+      'Could not determine which editor version to open the project with. Pass editorVersion, or ensure the project has ProjectSettings/ProjectVersion.txt.'
+    );
   }
 
-  return `Unity Editor launch initiated for: ${projectPath}`;
+  const editorExe = await resolveEditorExecutable(hubPath, version, logger);
+  const args = ['-projectPath', `"${projectPath}"`];
+
+  if (waitForExit) {
+    await execAsync(`"${editorExe}" ${args.join(' ')}`, { windowsHide: true });
+    return `Project opened with Unity ${version} and the Editor has exited: ${projectPath}`;
+  }
+
+  // Non-blocking launch
+  spawn(`"${editorExe}"`, args, {
+    detached: true,
+    stdio: 'ignore',
+    shell: true,
+    windowsHide: true
+  }).unref();
+
+  return `Launching Unity ${version} with project: ${projectPath}`;
 }
 
 export function registerUnityHubTool(server: McpServer, logger: Logger) {
@@ -249,17 +355,42 @@ async function toolHandler(params: any, logger: Logger): Promise<CallToolResult>
       }
       break;
 
-    case 'list_templates':
+    case 'list_templates': {
       if (!params.editorVersion) {
         throw new McpUnityError(
           ErrorType.VALIDATION,
           "Parameter 'editorVersion' is required for list_templates"
         );
       }
-      result = await executeHubCommand(hubPath, ['templates', '-v', params.editorVersion], logger);
+      // Unity Hub CLI has no `templates` subcommand; the templates ship as .tgz
+      // packages inside the installed editor, so enumerate them from disk.
+      const editorExe = await resolveEditorExecutable(hubPath, params.editorVersion, logger);
+      const templatesDir = getProjectTemplatesDir(editorExe);
+      if (!fs.existsSync(templatesDir)) {
+        result = JSON.stringify({
+          success: false,
+          message: `Templates directory not found: ${templatesDir}`,
+          editorVersion: params.editorVersion,
+          templates: []
+        }, null, 2);
+        break;
+      }
+      const templates = fs.readdirSync(templatesDir)
+        .filter(f => f.endsWith('.tgz'))
+        .map(f => {
+          const parsed = parseTemplateName(f);
+          return { id: parsed?.id ?? f.replace(/\.tgz$/, ''), version: parsed?.version ?? null, file: f };
+        });
+      result = JSON.stringify({
+        success: true,
+        editorVersion: params.editorVersion,
+        templatesDir,
+        templates
+      }, null, 2);
       break;
+    }
 
-    case 'create_project':
+    case 'create_project': {
       if (!params.projectPath) {
         throw new McpUnityError(
           ErrorType.VALIDATION,
@@ -273,35 +404,44 @@ async function toolHandler(params: any, logger: Logger): Promise<CallToolResult>
         );
       }
 
-      const createArgs = [
-        'create',
-        '-p', `"${params.projectPath}"`,
-        '-v', params.editorVersion
-      ];
+      // Unity Hub's CLI has no `create` subcommand. Two reliable paths instead:
+      //   - with a template: extract the template's ProjectData~ skeleton (like Hub does)
+      //   - otherwise: create a default project via the Editor binary's -createProject
+      const editorExe = await resolveEditorExecutable(hubPath, params.editorVersion, logger);
+      let usedTemplate = false;
+      let templateNote: string | undefined;
 
       if (params.template) {
-        createArgs.push('-t', params.template);
+        const templatesDir = getProjectTemplatesDir(editorExe);
+        try {
+          usedTemplate = await createFromTemplate(templatesDir, params.template, params.projectPath, logger);
+          if (!usedTemplate) {
+            templateNote = `Template '${params.template}' not found in ${templatesDir}; created a default project instead. Use list_templates to see available templates.`;
+          }
+        } catch (error: any) {
+          templateNote = `Template extraction failed (${error.message}); fell back to a default project.`;
+          usedTemplate = false;
+        }
       }
 
-      result = await executeHubCommand(hubPath, createArgs, logger);
-
-      // Check if project was created
-      if (fs.existsSync(params.projectPath)) {
-        result = JSON.stringify({
-          success: true,
-          message: `Project created successfully`,
-          projectPath: params.projectPath,
-          editorVersion: params.editorVersion,
-          template: params.template || 'default'
-        }, null, 2);
-      } else {
-        result = JSON.stringify({
-          success: false,
-          message: 'Project creation may have failed - directory not found',
-          output: result
-        }, null, 2);
+      if (!usedTemplate) {
+        await runEditorCreateProject(editorExe, params.projectPath, logger);
       }
+
+      const created = fs.existsSync(path.join(params.projectPath, 'Assets'));
+      result = JSON.stringify({
+        success: created,
+        message: created
+          ? `Project created successfully${usedTemplate ? ` from template '${params.template}'` : ''}`
+          : 'Project creation failed - no Assets/ folder was produced at the project path',
+        projectPath: params.projectPath,
+        editorVersion: params.editorVersion,
+        template: usedTemplate ? params.template : (params.template ? 'default (requested template not applied)' : 'default'),
+        method: usedTemplate ? 'template-extract' : 'editor-createProject',
+        ...(templateNote ? { note: templateNote } : {})
+      }, null, 2);
       break;
+    }
 
     case 'open_project':
       if (!params.projectPath) {
