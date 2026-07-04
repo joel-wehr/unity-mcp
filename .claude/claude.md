@@ -2,7 +2,7 @@
 
 This file is monitored by Claude Code for event-driven development. When changes are made to the Features or Issues sections below, the AI will review Unity and Anthropic MCP documentation to implement solutions.
 
-**Last Reviewed:** 2025-12-21
+**Last Reviewed:** 2026-01-15
 
 ---
 
@@ -97,6 +97,31 @@ Format:
 
 <!-- Automatically updated when features are completed or issues are resolved -->
 
+### 2026-01-15
+- Added 15 comprehensive control tools for complete Unity control
+- Added project_settings tool (PlayerSettings, QualitySettings, GraphicsSettings, etc.)
+- Added script_management tool (define symbols, assembly definitions, execution order)
+- Added profiler tool (frame capture, memory snapshots, performance counters)
+- Added build_pipeline tool (build, settings, scenes, reports, platform switching)
+- Added editor_control tool (window management, inspector, scene view)
+- Added undo_redo tool (undo/redo history, grouping)
+- Added watch_console tool (recursive iteration, wait for messages/errors/compilation)
+- Added debugger tool (expression evaluation, object dumps, method invocation)
+- Added asset_import tool (texture, model, audio import settings)
+- Added animation tool (Animator control, Timeline, recording)
+- Added physics tool (raycasts, simulation, forces)
+- Added material_shader tool (materials, shaders, keywords)
+- Added lighting tool (baking, ambient, fog, skybox)
+- Added unity_hub tool (create projects, manage editors - works without Unity running)
+- Added asset_store tool (download and import purchased assets)
+- Added 4 new resources (profiler, build status, editor state, project settings)
+
+### 2026-01-12
+- Added comprehensive XREAL One Pro mixed reality support (32 new tools)
+- Added XREAL resources (6 new resources)
+- Added XREAL workflow prompts (4 new prompts)
+- Added XREAL-specific error types
+
 ### 2025-12-21
 - Initial Unity MCP Server with 22 tools, 7 resources, 1 prompt
 - Created AI development tracker
@@ -105,7 +130,7 @@ Format:
 
 ## Current Implementation Status
 
-### Implemented Tools (22)
+### Core Unity Tools (22)
 - [x] create_scene - Create new scenes
 - [x] delete_scene - Delete scenes
 - [x] load_scene - Load scenes
@@ -129,7 +154,74 @@ Format:
 - [x] run_tests - Execute tests
 - [x] search_unity_knowledge - RAG documentation search
 
-### Implemented Resources (7)
+### Comprehensive Control Tools (15)
+- [x] project_settings - Get/set PlayerSettings, QualitySettings, GraphicsSettings, PhysicsSettings, etc.
+- [x] script_management - Define symbols, assembly definitions, script execution order
+- [x] profiler - Frame capture, memory snapshots, render stats, GC allocations, CPU/GPU usage
+- [x] build_pipeline - Build, settings, scenes, reports, platform switching, player settings
+- [x] editor_control - Window management, inspector lock/debug, scene view, refresh, screenshots
+- [x] undo_redo - Undo/redo history, grouping, object recording
+- [x] watch_console - Wait for messages/errors/compilation, recursive iteration support
+- [x] debugger - Expression evaluation, object dumps, method invocation, static field access
+- [x] asset_import - Texture, model, audio import settings and reimport
+- [x] animation - Animator control, Timeline playback, animation recording
+- [x] physics - Raycasts, sphere/box casts, overlaps, forces, layer collision matrix
+- [x] material_shader - Material properties, shader assignment, keywords, global properties
+- [x] lighting - Lightmap baking, ambient, fog, skybox, reflection probes
+- [x] unity_hub - Create projects, open projects, list/install editors, add modules (works without Unity running)
+- [x] asset_store - List/search purchased assets, download and import from Asset Store (requires Unity login)
+
+### XREAL Project Setup Tools (4)
+- [x] setup_xreal_project - Configure Unity project for XREAL One Pro
+- [x] configure_android_build - Android build settings for Samsung S24
+- [x] import_nrsdk - Import NRSDK package
+- [x] validate_xreal_setup - Validate project configuration
+
+### XREAL Device Tools (4)
+- [x] get_xreal_device_info - Query connected device status
+- [x] set_tracking_mode - Switch 0DoF/3DoF/6DoF tracking
+- [x] calibrate_glasses - IPD and display calibration
+- [x] get_camera_frame - Capture RGB camera frame
+
+### XREAL Hand Tracking Tools (4)
+- [x] enable_hand_tracking - Enable/configure hand tracking
+- [x] get_hand_state - Query hand pose and gestures
+- [x] configure_hand_gestures - Set up gesture recognition
+- [x] create_hand_interactable - Add hand interaction to GameObjects
+
+### XREAL Spatial Mapping Tools (5)
+- [x] enable_plane_detection - Detect floors, walls, tables
+- [x] get_detected_planes - Query detected planes
+- [x] create_spatial_anchor - Create persistent anchors
+- [x] manage_spatial_anchors - Load/save/delete anchors
+- [x] enable_meshing - Generate spatial mesh
+
+### XREAL Image Tracking Tools (3)
+- [x] add_tracking_image - Register images for detection
+- [x] configure_image_tracking - Set tracking quality/count
+- [x] get_tracked_images - Query detected images
+
+### XREAL Mixed Reality Tools (3)
+- [x] configure_passthrough - Camera passthrough settings
+- [x] set_render_mode - AR/VR/MR rendering mode
+- [x] configure_occlusion - Depth-based occlusion
+
+### XREAL Build Tools (2)
+- [x] build_xreal_apk - Build APK for XREAL
+- [x] get_connected_devices - List ADB devices
+
+### XREAL XR Interaction Tools (4)
+- [x] setup_xr_interaction - Configure XR Interaction Toolkit
+- [x] create_xr_rig - Create XREAL camera rig
+- [x] add_xr_interactor - Add ray/direct interactors
+- [x] create_xr_ui - World-space UI for XR
+
+### XREAL Performance Tools (3)
+- [x] get_xr_performance_metrics - Frame rate, GPU, thermals
+- [x] profile_xr_scene - Analyze scene performance
+- [x] capture_xr_screenshot - Capture XR viewport
+
+### Core Unity Resources (7)
 - [x] unity://scenes_hierarchy - All GameObjects in loaded scenes
 - [x] unity://gameobject/{id} - Detailed GameObject info
 - [x] unity://menu-items - Available menu items
@@ -138,8 +230,28 @@ Format:
 - [x] unity://assets - Asset Database contents
 - [x] unity://tests/{mode} - Test Runner info
 
-### Implemented Prompts (1)
+### Comprehensive Control Resources (4)
+- [x] unity://profiler/{dataType} - Real-time profiler data (frame_timing, memory, rendering, cpu, gc_allocs, physics)
+- [x] unity://build/{infoType} - Build pipeline info (settings, scenes, report, platforms)
+- [x] unity://editor_state - Current editor state (play mode, compilation, selection, etc.)
+- [x] unity://settings/{category} - Project settings by category (player, quality, graphics, physics, etc.)
+
+### XREAL Resources (6)
+- [x] xreal://device_state - Device connection and tracking status
+- [x] xreal://hand_tracking/{hand} - Hand joint positions and gestures
+- [x] xreal://spatial_anchors - All spatial anchors in scene
+- [x] xreal://detected_planes - Detected environment planes
+- [x] xreal://tracked_images - Currently tracked images
+- [x] xreal://build_settings - Android/XREAL build configuration
+
+### Core Unity Prompts (1)
 - [x] gameobject_handling_strategy - GameObject workflow guidance
+
+### XREAL Prompts (4)
+- [x] xreal_project_setup - Step-by-step project setup guide
+- [x] hand_interaction_strategy - Hand tracking best practices
+- [x] spatial_anchor_workflow - Persistent MR experiences
+- [x] xreal_optimization_guide - Mobile XR performance optimization
 
 ---
 
