@@ -18,6 +18,15 @@ permissive (all fields optional, `.passthrough()`, instanceId accepts number|str
 risk is low, but do a live round-trip on the testbed to confirm get_gameobject /
 find_gameobjects / get_console_logs / run_tests don't trip output validation → isError.
 
+## Recurring issue triage (set up 2026-07-04)
+An in-session `/loop` (CronDelete job **25b49b00**, cron `7 */6 * * *` — every 6h at :07)
+polls `gh issue list --repo joel-wehr/unity-mcp --state open` and triages per the mandate
+(implement+push+close, or Radar+summarize if it needs human judgment). Uses local `gh`
+auth + Radar + Unity testbed. **Session-only: dies when the cockpit closes, and cron jobs
+auto-expire after 7 days** — re-run `/loop 6h …` next session, or set up a durable cloud
+routine (needs GitHub connected via /web-setup first). User chose in-cockpit over cloud
+on 2026-07-04. As of setup: 0 open issues.
+
 ## Standing mandate (from user, 2026-07-04)
 I am the PM that **controls this repo**. Goals:
 - Build a **comprehensive, bleeding-edge** Unity MCP server.
