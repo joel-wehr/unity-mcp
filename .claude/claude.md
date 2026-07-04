@@ -2,7 +2,7 @@
 
 This file is monitored by Claude Code for event-driven development. When changes are made to the Features or Issues sections below, the AI will review Unity and Anthropic MCP documentation to implement solutions.
 
-**Last Reviewed:** 2026-01-15
+**Last Reviewed:** 2026-07-04
 
 ---
 
@@ -96,6 +96,12 @@ Format:
 ## Changelog
 
 <!-- Automatically updated when features are completed or issues are resolved -->
+
+### 2026-07-04
+- Committed the full outstanding body of work (Unity C# plugin + expanded TS server + docs) and pushed to origin/main; repo is clean.
+- Ran a 3-track competitive/protocol research sweep and wrote **ROADMAP.md** (gap analysis + prioritized backlog).
+- Key finding: Unity now ships an official first-party MCP server (`com.unity.ai.assistant`, subscription-gated); community leader is CoplayDev/unity-mcp (~11.5k★). Our wedge: free/open + breadth + XREAL.
+- Top gaps identified: deprecated `server.tool()` API (no annotations/output schemas), no progress/cancellation on slow ops, `update_component` can't set object references, no structured script-editing or batch+rollback. See ROADMAP.md.
 
 ### 2026-01-15
 - Added 15 comprehensive control tools for complete Unity control
