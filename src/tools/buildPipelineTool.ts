@@ -5,6 +5,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { getToolAnnotations } from "../utils/toolAnnotations.js";
+import { sendUnityRequestWithProgress, ProgressCapableExtra } from "../utils/progress.js";
 
 // Constants for the tool
 const toolName = 'build_pipeline';
@@ -70,10 +71,10 @@ export function registerBuildPipelineTool(server: McpServer, mcpUnity: McpUnity,
       inputSchema: paramsSchema.shape,
       annotations: getToolAnnotations(toolName),
     },
-    async (params: any) => {
+    async (params: any, extra: ProgressCapableExtra) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);
-        const result = await toolHandler(mcpUnity, params);
+        const result = await toolHandler(mcpUnity, params, logger, extra);
         logger.info(`Tool execution successful: ${toolName}`);
         return result;
       } catch (error) {
@@ -84,7 +85,7 @@ export function registerBuildPipelineTool(server: McpServer, mcpUnity: McpUnity,
   );
 }
 
-async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolResult> {
+async function toolHandler(mcpUnity: McpUnity, params: any, logger: Logger, extra?: ProgressCapableExtra): Promise<CallToolResult> {
   const { action } = params;
 
   // Validate required parameters
@@ -116,10 +117,21 @@ async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolRes
     );
   }
 
-  const response = await mcpUnity.sendRequest({
-    method: toolName,
-    params
-  });
+  // Only the heavy actions warrant a determinate progress estimate; light
+  // query actions return before the first heartbeat tick anyway. Cancellation
+  // is forwarded for every action.
+  const heavyEstimates: Record<string, number> = {
+    build: 120000,
+    switch_platform: 60000,
+  };
+
+  const response = await sendUnityRequestWithProgress(
+    mcpUnity,
+    { method: toolName, params },
+    extra,
+    logger,
+    { label: `Build pipeline: ${action}`, estimatedMs: heavyEstimates[action] }
+  );
 
   if (!response.success) {
     throw new McpUnityError(

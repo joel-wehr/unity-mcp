@@ -5,6 +5,7 @@ export enum ErrorType {
   VALIDATION = 'validation_error',
   INTERNAL = 'internal_error',
   TIMEOUT = 'timeout_error',
+  CANCELLED = 'cancelled',
   RAG_ERROR = 'rag_error',
   // XREAL-specific error types
   XREAL_SDK_NOT_FOUND = 'xreal_sdk_not_found',

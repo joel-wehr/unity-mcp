@@ -5,6 +5,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { getToolAnnotations } from "../utils/toolAnnotations.js";
+import { sendUnityRequestWithProgress, ProgressCapableExtra } from "../utils/progress.js";
 
 // Constants for the tool
 const toolName = 'recompile_scripts';
@@ -33,10 +34,10 @@ export function registerRecompileScriptsTool(server: McpServer, mcpUnity: McpUni
       inputSchema: paramsSchema.shape,
       annotations: getToolAnnotations(toolName),
     },
-    async (params: any) => {
+    async (params: any, extra: ProgressCapableExtra) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);
-        const result = await toolHandler(mcpUnity, params);
+        const result = await toolHandler(mcpUnity, params, logger, extra);
         logger.info(`Tool execution successful: ${toolName}`);
         return result;
       } catch (error) {
@@ -55,19 +56,25 @@ export function registerRecompileScriptsTool(server: McpServer, mcpUnity: McpUni
  * @returns A promise that resolves to the tool execution result
  * @throws McpUnityError if the request to Unity fails
  */
-async function toolHandler(mcpUnity: McpUnity, params: z.infer<typeof paramsSchema>): Promise<CallToolResult> {
+async function toolHandler(mcpUnity: McpUnity, params: z.infer<typeof paramsSchema>, logger: Logger, extra?: ProgressCapableExtra): Promise<CallToolResult> {
   // Validate and prepare parameters
   const returnWithLogs = params.returnWithLogs ?? true;
   const logsLimit = Math.max(0, Math.min(1000, params.logsLimit || 100));
 
-  // Send to Unity with validated parameters
-  const response = await mcpUnity.sendRequest({
-    method: toolName,
-    params: {
-      returnWithLogs,
-      logsLimit
-    }
-  });
+  // Send to Unity with validated parameters (with cancellation + progress heartbeats)
+  const response = await sendUnityRequestWithProgress(
+    mcpUnity,
+    {
+      method: toolName,
+      params: {
+        returnWithLogs,
+        logsLimit
+      }
+    },
+    extra,
+    logger,
+    { label: 'Recompiling scripts', estimatedMs: 30000 }
+  );
 
   if (!response.success) {
     throw new McpUnityError(

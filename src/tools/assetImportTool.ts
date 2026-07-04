@@ -5,6 +5,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { getToolAnnotations } from "../utils/toolAnnotations.js";
+import { sendUnityRequestWithProgress, ProgressCapableExtra } from "../utils/progress.js";
 
 // Constants for the tool
 const toolName = 'asset_import';
@@ -85,10 +86,10 @@ export function registerAssetImportTool(server: McpServer, mcpUnity: McpUnity, l
       inputSchema: paramsSchema.shape,
       annotations: getToolAnnotations(toolName),
     },
-    async (params: any) => {
+    async (params: any, extra: ProgressCapableExtra) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);
-        const result = await toolHandler(mcpUnity, params);
+        const result = await toolHandler(mcpUnity, params, logger, extra);
         logger.info(`Tool execution successful: ${toolName}`);
         return result;
       } catch (error) {
@@ -99,7 +100,7 @@ export function registerAssetImportTool(server: McpServer, mcpUnity: McpUnity, l
   );
 }
 
-async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolResult> {
+async function toolHandler(mcpUnity: McpUnity, params: any, logger: Logger, extra?: ProgressCapableExtra): Promise<CallToolResult> {
   const { action } = params;
 
   // Validate required parameters
@@ -117,10 +118,14 @@ async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolRes
     );
   }
 
-  const response = await mcpUnity.sendRequest({
-    method: toolName,
-    params
-  });
+  // reimport_all can be very slow on large projects; emit progress + allow cancel.
+  const response = await sendUnityRequestWithProgress(
+    mcpUnity,
+    { method: toolName, params },
+    extra,
+    logger,
+    { label: `Asset import: ${action}`, estimatedMs: action === 'reimport_all' ? 60000 : undefined }
+  );
 
   if (!response.success) {
     throw new McpUnityError(

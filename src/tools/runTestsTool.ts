@@ -5,6 +5,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { getToolAnnotations } from "../utils/toolAnnotations.js";
+import { sendUnityRequestWithProgress, ProgressCapableExtra } from "../utils/progress.js";
 
 // Constants for the tool
 const toolName = 'run_tests';
@@ -15,6 +16,18 @@ const paramsSchema = z.object({
   returnOnlyFailures: z.boolean().optional().default(true).describe('Whether to show only failed tests in the results (optional)'),
   returnWithLogs: z.boolean().optional().default(false).describe('Whether to return the test logs in the results (optional)')
 });
+
+// Structured output schema (permissive: fields optional so real Unity responses
+// never fail validation; extra keys are tolerated by the SDK).
+const outputSchema = {
+  success: z.boolean().optional().describe('Whether the test run completed'),
+  message: z.string().optional().describe('Human-readable summary or error'),
+  testCount: z.number().optional().describe('Total tests executed'),
+  passCount: z.number().optional().describe('Number of passing tests'),
+  failCount: z.number().optional().describe('Number of failing tests'),
+  skipCount: z.number().optional().describe('Number of skipped tests'),
+  results: z.array(z.record(z.any())).optional().describe('Per-test results')
+};
 
 /**
  * Creates and registers the Run Tests tool with the MCP server
@@ -33,12 +46,13 @@ export function registerRunTestsTool(server: McpServer, mcpUnity: McpUnity, logg
     {
       description: toolDescription,
       inputSchema: paramsSchema.shape,
+      outputSchema,
       annotations: getToolAnnotations(toolName),
     },
-    async (params: any = {}) => {
+    async (params: any = {}, extra: ProgressCapableExtra) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);
-        const result = await toolHandler(mcpUnity, params);
+        const result = await toolHandler(mcpUnity, params, logger, extra);
         logger.info(`Tool execution successful: ${toolName}`);
         return result;
       } catch (error) {
@@ -57,7 +71,7 @@ export function registerRunTestsTool(server: McpServer, mcpUnity: McpUnity, logg
  * @returns A promise that resolves to the tool execution result
  * @throws McpUnityError if the request to Unity fails
  */
-async function toolHandler(mcpUnity: McpUnity, params: any = {}): Promise<CallToolResult> {
+async function toolHandler(mcpUnity: McpUnity, params: any = {}, logger: Logger, extra?: ProgressCapableExtra): Promise<CallToolResult> {
   const {
     testMode = 'EditMode',
     testFilter = '',
@@ -65,16 +79,22 @@ async function toolHandler(mcpUnity: McpUnity, params: any = {}): Promise<CallTo
     returnWithLogs = false
   } = params;
 
-  // Create and wait for the test run
-  const response = await mcpUnity.sendRequest({
-    method: toolName,
-    params: {
-      testMode,
-      testFilter,
-      returnOnlyFailures,
-      returnWithLogs
-    }
-  });
+  // Create and wait for the test run (with cancellation + progress heartbeats)
+  const response = await sendUnityRequestWithProgress(
+    mcpUnity,
+    {
+      method: toolName,
+      params: {
+        testMode,
+        testFilter,
+        returnOnlyFailures,
+        returnWithLogs
+      }
+    },
+    extra,
+    logger,
+    { label: `Running ${testMode} tests`, estimatedMs: 60000 }
+  );
 
   // Process the test results
   if (!response.success) {
@@ -107,6 +127,15 @@ async function toolHandler(mcpUnity: McpUnity, params: any = {}): Promise<CallTo
           results: testResults
         }, null, 2)
       }
-    ]
+    ],
+    structuredContent: {
+      success: response.success ?? true,
+      message: response.message,
+      testCount,
+      passCount,
+      failCount,
+      skipCount,
+      results: testResults
+    }
   };
 }

@@ -35,6 +35,21 @@ const paramsSchema = z.object({
     .describe("Whether to include stack trace in logs. Set to false to save 80-90% tokens. Default: true")
 });
 
+// Structured output schema (permissive: log entry shape + pagination fields all
+// optional, extra keys tolerated).
+const outputSchema = {
+  success: z.boolean().optional().describe('Whether the logs were retrieved'),
+  message: z.string().optional().describe('Human-readable summary or error'),
+  logs: z.array(z.object({
+    message: z.string().optional(),
+    type: z.string().optional(),
+    stackTrace: z.string().optional(),
+  }).passthrough()).optional().describe('Console log entries'),
+  offset: z.number().optional().describe('Pagination offset used'),
+  limit: z.number().optional().describe('Pagination limit used'),
+  total: z.number().optional().describe('Total number of matching logs available'),
+};
+
 /**
  * Creates and registers the Get Console Logs tool with the MCP server
  * This tool allows retrieving messages from the Unity console
@@ -56,6 +71,7 @@ export function registerGetConsoleLogsTool(
     {
       description: toolDescription,
       inputSchema: paramsSchema.shape,
+      outputSchema,
       annotations: getToolAnnotations(toolName),
     },
     async (params: z.infer<typeof paramsSchema>) => {
@@ -111,5 +127,6 @@ async function toolHandler(
         text: JSON.stringify(response, null, 2)
       },
     ],
+    structuredContent: response,
   };
 }

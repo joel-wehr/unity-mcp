@@ -5,6 +5,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { getToolAnnotations } from "../utils/toolAnnotations.js";
+import { sendUnityRequestWithProgress, ProgressCapableExtra } from "../utils/progress.js";
 
 // Constants for the tool
 const toolName = 'lighting';
@@ -82,10 +83,10 @@ export function registerLightingTool(server: McpServer, mcpUnity: McpUnity, logg
       inputSchema: paramsSchema.shape,
       annotations: getToolAnnotations(toolName),
     },
-    async (params: any) => {
+    async (params: any, extra: ProgressCapableExtra) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);
-        const result = await toolHandler(mcpUnity, params);
+        const result = await toolHandler(mcpUnity, params, logger, extra);
         logger.info(`Tool execution successful: ${toolName}`);
         return result;
       } catch (error) {
@@ -96,7 +97,7 @@ export function registerLightingTool(server: McpServer, mcpUnity: McpUnity, logg
   );
 }
 
-async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolResult> {
+async function toolHandler(mcpUnity: McpUnity, params: any, logger: Logger, extra?: ProgressCapableExtra): Promise<CallToolResult> {
   const { action } = params;
 
   if (action === 'set_settings' && !params.lightingSettings) {
@@ -127,11 +128,16 @@ async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolRes
     );
   }
 
-  // Note: Baking can take a long time - Unity side should handle appropriately
-  const response = await mcpUnity.sendRequest({
-    method: toolName,
-    params
-  });
+  // Baking (bake / bake_reflection_probes) can take minutes; emit progress +
+  // forward cancellation. Light query/config actions return before the first tick.
+  const bakingActions = ['bake', 'bake_reflection_probes', 'bake_all'];
+  const response = await sendUnityRequestWithProgress(
+    mcpUnity,
+    { method: toolName, params },
+    extra,
+    logger,
+    { label: `Lighting: ${action}`, estimatedMs: bakingActions.includes(action) ? 120000 : undefined }
+  );
 
   if (!response.success) {
     throw new McpUnityError(

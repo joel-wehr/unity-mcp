@@ -97,6 +97,24 @@ Format:
 
 <!-- Automatically updated when features are completed or issues are resolved -->
 
+### 2026-07-04 (P0b–d: protocol modernization pt.2)
+- **P0b — structured output:** added `outputSchema` + `structuredContent` to the core
+  structured readers `get_gameobject`, `find_gameobjects`, `get_console_logs`, `run_tests`.
+  Schemas are permissive (fields optional, `.passthrough()`, id fields accept number|string
+  for post-6.5 EntityId compat) so a valid Unity response never fails output validation.
+- **P0c — progress + cancellation:** new `src/utils/progress.ts`
+  (`sendUnityRequestWithProgress`) emits time-based `notifications/progress` heartbeats
+  (only when the client sends a `progressToken`) and forwards the client's `AbortSignal`.
+  `McpUnity.sendRequest` now accepts an `AbortSignal`: an aborted call stops waiting and
+  rejects with `ErrorType.CANCELLED` (Unity-side cancel still needs plugin support — roadmap).
+  Wired into `run_tests`, `build_pipeline`, `recompile_scripts`, `asset_import`, `lighting`.
+- **P0d — error hygiene:** verified end-to-end that thrown handler errors (Unity down,
+  Unity-reported failures) AND input-validation errors surface as well-formed
+  `isError: true` tool results — no JSON-RPC protocol errors leak from `tools/call`.
+- Bumped `@modelcontextprotocol/sdk` pin `^1.7.0` → `^1.29.0` (installed 1.29.0).
+- Verified: `tsc --noEmit` clean, `npm run build` clean, server boots and registers 84 tools
+  over a real STDIO handshake with the new schemas/annotations advertised.
+
 ### 2026-07-04
 - Committed the full outstanding body of work (Unity C# plugin + expanded TS server + docs) and pushed to origin/main; repo is clean.
 - Ran a 3-track competitive/protocol research sweep and wrote **ROADMAP.md** (gap analysis + prioritized backlog).

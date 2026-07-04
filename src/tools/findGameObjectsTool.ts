@@ -18,6 +18,22 @@ const paramsSchema = z.object({
   includeInactive: z.boolean().optional().describe('Whether to include inactive GameObjects (default: true)')
 });
 
+// Structured output schema (permissive: nested/extra fields tolerated).
+const outputSchema = {
+  success: z.boolean().optional().describe('Whether the search succeeded'),
+  message: z.string().optional().describe('Human-readable summary or error'),
+  gameObjects: z.array(z.object({
+    name: z.string().optional(),
+    // Accept number or string: post Unity-6.5 EntityId migration ids may serialize
+    // as strings. Kept flexible so a valid response never fails output validation.
+    instanceId: z.union([z.number(), z.string()]).optional(),
+    path: z.string().optional(),
+    tag: z.string().optional(),
+    layerName: z.string().optional(),
+    activeInHierarchy: z.boolean().optional(),
+  }).passthrough()).optional().describe('Matching GameObjects'),
+};
+
 /**
  * Creates and registers the Find GameObjects tool with the MCP server
  * This tool allows searching for GameObjects in the Unity scene
@@ -35,6 +51,7 @@ export function registerFindGameObjectsTool(server: McpServer, mcpUnity: McpUnit
     {
       description: toolDescription,
       inputSchema: paramsSchema.shape,
+      outputSchema,
       annotations: getToolAnnotations(toolName),
     },
     async (params: any) => {
@@ -86,6 +103,11 @@ async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolRes
     content: [{
       type: "text" as const,
       text: resultText
-    }]
+    }],
+    structuredContent: {
+      success: response.success ?? true,
+      message: response.message,
+      gameObjects: response.gameObjects ?? [],
+    },
   };
 }

@@ -19,6 +19,7 @@ interface UnityRequest {
   method: string;
   params: any;
   timeout?: number; // Per-request timeout override in ms
+  signal?: AbortSignal; // Optional cancellation signal (e.g. from an MCP client cancel)
 }
 
 // Methods that are known to take a long time
@@ -261,12 +262,19 @@ export class McpUnity {
       await this.connect();
     }
 
-    // Use given id or generate a new one
+    // Use given id or generate a new one. `signal` is a Node-side concern only —
+    // strip it so it is never serialized onto the wire to Unity.
     const requestId = request.id as string || uuidv4();
+    const { signal, ...wireRequest } = request;
     const message: UnityRequest = {
-      ...request,
+      ...wireRequest,
       id: requestId
     };
+
+    // Reject fast if the caller already cancelled before we got here.
+    if (signal?.aborted) {
+      return Promise.reject(new McpUnityError(ErrorType.CANCELLED, 'Request cancelled by client'));
+    }
 
     return new Promise((resolve, reject) => {
       // Double check isConnected again after await
@@ -280,20 +288,41 @@ export class McpUnity {
         || LONG_RUNNING_METHODS[request.method]
         || this.requestTimeout;
 
+      // Cleanup shared by every terminal path (timeout, abort, response, send failure).
+      const cleanup = () => {
+        clearTimeout(timeout);
+        if (signal) signal.removeEventListener('abort', onAbort);
+        this.pendingRequests.delete(requestId);
+      };
+
+      // Client-initiated cancellation: stop waiting on the Node side and clean up.
+      // Note: Unity keeps executing the op (the plugin has no cancel channel yet);
+      // this frees the client and the pending slot. See ROADMAP (Unity-side cancel).
+      const onAbort = () => {
+        if (this.pendingRequests.has(requestId)) {
+          this.logger.info(`Request ${requestId} (${request.method}) cancelled by client`);
+          cleanup();
+          reject(new McpUnityError(ErrorType.CANCELLED, 'Request cancelled by client'));
+        }
+      };
+
       // Create timeout for the request
       const timeout = setTimeout(() => {
         if (this.pendingRequests.has(requestId)) {
           this.logger.error(`Request ${requestId} (${request.method}) timed out after ${effectiveTimeout}ms`);
-          this.pendingRequests.delete(requestId);
+          cleanup();
           reject(new McpUnityError(ErrorType.TIMEOUT, `Request timed out after ${effectiveTimeout / 1000}s`));
         }
         this.reconnect();
       }, effectiveTimeout);
 
-      // Store pending request
+      if (signal) signal.addEventListener('abort', onAbort, { once: true });
+
+      // Store pending request. Wrap resolve/reject so cleanup always runs,
+      // including the abort-listener removal, when Unity's response arrives.
       this.pendingRequests.set(requestId, {
-        resolve,
-        reject,
+        resolve: (value: any) => { cleanup(); resolve(value); },
+        reject: (reason: any) => { cleanup(); reject(reason); },
         timeout
       });
 
@@ -301,8 +330,7 @@ export class McpUnity {
         this.ws.send(JSON.stringify(message));
         this.logger.debug(`Request sent: ${requestId}`);
       } catch (err) {
-        clearTimeout(timeout);
-        this.pendingRequests.delete(requestId);
+        cleanup();
         reject(new McpUnityError(ErrorType.CONNECTION, `Send failed: ${err instanceof Error ? err.message : String(err)}`));
       }
     });

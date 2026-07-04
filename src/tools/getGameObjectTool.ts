@@ -18,6 +18,14 @@ const paramsSchema = z.object({
     ),
 });
 
+// Structured output schema (permissive: only the envelope is asserted; Unity's
+// full GameObject payload — components, transform, etc. — passes through as extra
+// keys, which the SDK tolerates).
+const outputSchema = {
+  success: z.boolean().optional().describe('Whether the GameObject was found'),
+  message: z.string().optional().describe('Human-readable summary or error'),
+};
+
 /**
  * Creates and registers the Get GameObject tool with the MCP server
  * This tool allows retrieving detailed information about GameObjects in Unity scenes
@@ -39,6 +47,7 @@ export function registerGetGameObjectTool(
     {
       description: toolDescription,
       inputSchema: paramsSchema.shape,
+      outputSchema,
       annotations: getToolAnnotations(toolName),
     },
     async (params: z.infer<typeof paramsSchema>) => {
@@ -91,5 +100,6 @@ async function toolHandler(
         text: JSON.stringify(response, null, 2)
       },
     ],
+    structuredContent: response,
   };
 }
