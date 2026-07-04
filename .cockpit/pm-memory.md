@@ -2,6 +2,17 @@
 
 _Last updated: 2026-07-04 (after P0b–d: structured output, progress+cancel, error hygiene, SDK 1.29)_
 
+## ⚙️ ON /pm STARTUP — DO THIS FIRST (every /pm run)
+Auto-start the GitHub issue-triage loop for this session (it's session-only and dies
+when the cockpit closes, so it must be recreated each /pm run):
+1. `CronList` — if a job whose prompt triages `joel-wehr/unity-mcp` issues already
+   exists this session, do nothing (avoid duplicates).
+2. Otherwise `CronCreate` with cron **`*/15 * * * *`** (every 15 min), `recurring: true`,
+   and the triage prompt recorded in the "Recurring issue triage" section below.
+3. Then run the triage once immediately (`gh issue list --repo joel-wehr/unity-mcp
+   --state open --limit 50`) so you don't wait 15 min for the first pass.
+Mention to the user that the loop is running (cadence + job id).
+
 ## Quick resume (start here)
 Repo is CLEAN, on `main`, all pushed (commit: P0b-d). **All of P0 is now DONE.**
 `tsc`+build clean; server boots and registers **84 tools** over a real STDIO handshake.
@@ -19,13 +30,25 @@ risk is low, but do a live round-trip on the testbed to confirm get_gameobject /
 find_gameobjects / get_console_logs / run_tests don't trip output validation → isError.
 
 ## Recurring issue triage (set up 2026-07-04)
-An in-session `/loop` (CronDelete job **a9fe344a**, cron `30 * * * *` — hourly at :30)
-polls `gh issue list --repo joel-wehr/unity-mcp --state open` and triages per the mandate
-(implement+push+close, or Radar+summarize if it needs human judgment). Uses local `gh`
-auth + Radar + Unity testbed. **Session-only: dies when the cockpit closes, and cron jobs
-auto-expire after 7 days** — re-run `/loop 6h …` next session, or set up a durable cloud
-routine (needs GitHub connected via /web-setup first). User chose in-cockpit over cloud
-on 2026-07-04. As of setup: 0 open issues.
+An in-session CronCreate job (current id **9413e61a**, cron `*/15 * * * *` — **every 15 min**)
+polls open issues on `joel-wehr/unity-mcp` and triages per the mandate (implement+push+close,
+or Radar+summarize if it needs human judgment). Uses local `gh` auth + Radar + Unity testbed.
+**Auto-started on every /pm run** (see "ON /pm STARTUP" at top). **Session-only: dies when the
+cockpit closes; cron jobs also auto-expire after 7 days** — /pm recreates it. User chose
+in-cockpit over cloud on 2026-07-04; durable cloud routine would need GitHub connected via
+/web-setup. As of setup: 0 open issues.
+
+**Triage prompt (reuse verbatim when recreating the job):**
+> Triage GitHub issues on joel-wehr/unity-mcp. Run `gh issue list --repo joel-wehr/unity-mcp
+> --state open --limit 50`. If there are no open issues, briefly report "no open issues" and do
+> nothing else. For each open issue (especially those filed by other PM/agents), run `gh issue
+> view <n> --repo joel-wehr/unity-mcp` to read it, then per the standing PM mandate (senior dev
+> AI owning this Unity MCP server, authorized to commit+push to main): (a) if it's a clear
+> feature/bug you can implement, research + implement it, build+typecheck clean, commit and push
+> to main, then comment on the issue with what you did and close it; or (b) if it needs human
+> judgment or is ambiguous/risky, add it to the cockpit Radar (mark urgent if time-sensitive) and
+> summarize it for the user without changing code. Record any triage actions in
+> .cockpit/pm-memory.md. Do not re-triage issues you already handled.
 
 ## Standing mandate (from user, 2026-07-04)
 I am the PM that **controls this repo**. Goals:
