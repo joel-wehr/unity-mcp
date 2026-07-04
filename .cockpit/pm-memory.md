@@ -19,6 +19,34 @@ I am the PM that **controls this repo**. Goals:
 - 2026-07-04: 3 research agents (Sonnet) completed. Wrote **ROADMAP.md** (gap analysis
   + prioritized P0–P3 backlog) and committed it. Updated `.claude/CLAUDE.md` changelog.
 
+## Decisions (user, 2026-07-04)
+- **Workflow:** direct-to-main + notify (no PRs). Authorized to push to origin/main.
+- **Test infra:** yes — stand up a live Unity project + CI. DONE (see below).
+- **First work:** P0 protocol modernization. P0a done; P0b–d remain.
+
+## Progress log (continued)
+- 2026-07-04: Added **CI** (`.github/workflows/ci.yml`, typecheck+build on Node 20/22)
+  and `.gitattributes` (LF normalization). Pushed.
+- 2026-07-04: **P0a DONE** — migrated all ~82 tools `server.tool()` → `registerTool()`
+  + centralized MCP tool annotations (`src/utils/toolAnnotations.ts`). Verified: boots,
+  all tools register, tsc+build clean. Committed 9179ae0.
+- 2026-07-04: **Test infra DONE** — created Unity 6 testbed at
+  `C:\Users\joelw\joelwehr.com\Unity\McpTestbed` (6000.5.2f1), embedded plugin,
+  validated full round-trip (get_console_logs/send_console_log/create_scene) on 6.5.
+- 2026-07-04: **Fixed 2 install-blocking Unity 6/6.5 bugs** (found via live compile,
+  committed 657a0a8): (1) missing `com.unity.ugui` dependency; (2) Unity 6.5
+  InstanceID→EntityId obsolete-errors → added `McpId` reflection shim + codemodded
+  64 sites. See MCP_GAPS_LOG.md 2026-07-04 entry.
+
+## Remaining P0 (task #5, in progress)
+- P0b: outputSchema + structuredContent on structured-data readers (get_gameobject,
+  find_gameobjects, get_console_logs, project_settings, profiler, editor_state...).
+- P0c: progress notifications + cancellation for slow tools (run_tests, build_pipeline,
+  recompile_scripts, asset_import, lighting bake).
+- P0d: error hygiene (verify thrown errors surface as isError tool results, not protocol
+  errors). NOTE: SDK likely already converts thrown handler errors to isError — verify.
+- Also: bump SDK pin ^1.7.0 → ^1.29.0 (installed is 1.25.1; low risk).
+
 ## Key research findings (2026-07-04) — see ROADMAP.md for detail
 - **Unity ships its own first-party MCP now** (`com.unity.ai.assistant`, Unity 6000+,
   auto-start bridge + relay, custom-tool SDK, connection approval) — **but subscription-gated.**

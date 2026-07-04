@@ -37,6 +37,33 @@ setup). The plugin hosts the WebSocket server the Node process connects to. If t
 Node server can't bind/connect, confirm the Unity Editor is open with the plugin
 loaded and listening on 8090.
 
+## Local test project (for validating tools live)
+A dedicated Unity 6 testbed lives at `C:\Users\joelw\joelwehr.com\Unity\McpTestbed`
+(Unity **6000.5.2f1**), with the plugin embedded at
+`McpTestbed/Packages/com.joelwehr.unity-mcp/`.
+
+Installed editors: `2022.3.62f3` and `6000.5.2f1` under
+`C:\Program Files\Unity\Hub\Editor\<ver>\Editor\Unity.exe`.
+
+Re-sync the plugin into the testbed after editing `UnityPlugin/`:
+```bash
+cp -r UnityPlugin/. "C:/Users/joelw/joelwehr.com/Unity/McpTestbed/Packages/com.joelwehr.unity-mcp/"
+```
+Compile-check (batchmode, quits after):
+```bash
+"C:/Program Files/Unity/Hub/Editor/6000.5.2f1/Editor/Unity.exe" \
+  -projectPath "C:/Users/joelw/joelwehr.com/Unity/McpTestbed" -batchmode -quit -logFile <log>
+# grep the log for "error CS"; 0 = clean.
+```
+Resident run (bridge stays up on 8090 for round-trip tests) — launch WITHOUT `-quit`
+in the background, poll TCP 8090, run a client, then stop the `Unity.exe` whose command
+line contains `McpTestbed`. A reusable round-trip harness that reuses the built
+`McpUnity` client lives in the scratchpad (`roundtrip.mjs`); it calls
+get_console_logs / send_console_log / create_scene. Env: `UNITY_PORT=8090`.
+
+NOTE: batchmode without `-quit` only stays resident if scripts compile cleanly;
+a compile error makes it exit 1 immediately.
+
 ## Quick sanity check
 ```bash
 npm run build && node build/index.js   # should start and wait on STDIO
