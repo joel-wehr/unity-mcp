@@ -1,14 +1,22 @@
 # Unity MCP — PM Memory
 
-_Last updated: 2026-07-04 (checkpoint — after CI, Unity 6.5 testbed, P0a, compile fixes)_
+_Last updated: 2026-07-04 (after P0b–d: structured output, progress+cancel, error hygiene, SDK 1.29)_
 
 ## Quick resume (start here)
-Repo is CLEAN, on `main`, CI green, all pushed. Latest work: fixed 2 Unity 6/6.5
-compile bugs + validated live round-trip on the testbed. **Next up: remaining P0**
-(P0b outputSchema/structuredContent, P0c progress+cancellation, P0d error hygiene +
-bump SDK pin to ^1.29.0). See "Remaining P0" below. Alternative high-value pivot:
-P1.1 update_component object-reference fix. Awaiting user steer on P0-vs-P1; default
-is continue P0. Test workflow + commands are in launch.md.
+Repo is CLEAN, on `main`, all pushed (commit: P0b-d). **All of P0 is now DONE.**
+`tsc`+build clean; server boots and registers **84 tools** over a real STDIO handshake.
+SDK bumped to **1.29.0**. **Next up: P1** — recommend **P1.1 update_component
+object-reference fix** (the #1 known bug: today can't wire object/component refs,
+needs execute_code + SerializedObject). Other P1: structured script editing,
+batch+rollback, screenshot verify, live docs/reflection, elicitation. See ROADMAP.md.
+Test workflow + commands are in launch.md.
+
+## ⚠️ One open verification (do when Unity is next up)
+P0b structuredContent was validated against the SDK (schemas advertised, boot OK) but
+NOT yet against a LIVE Unity response (Unity wasn't running). Schemas are deliberately
+permissive (all fields optional, `.passthrough()`, instanceId accepts number|string) so
+risk is low, but do a live round-trip on the testbed to confirm get_gameobject /
+find_gameobjects / get_console_logs / run_tests don't trip output validation → isError.
 
 ## Standing mandate (from user, 2026-07-04)
 I am the PM that **controls this repo**. Goals:
@@ -46,14 +54,23 @@ I am the PM that **controls this repo**. Goals:
   InstanceID→EntityId obsolete-errors → added `McpId` reflection shim + codemodded
   64 sites. See MCP_GAPS_LOG.md 2026-07-04 entry.
 
-## Remaining P0 (task #5, in progress)
-- P0b: outputSchema + structuredContent on structured-data readers (get_gameobject,
-  find_gameobjects, get_console_logs, project_settings, profiler, editor_state...).
-- P0c: progress notifications + cancellation for slow tools (run_tests, build_pipeline,
-  recompile_scripts, asset_import, lighting bake).
-- P0d: error hygiene (verify thrown errors surface as isError tool results, not protocol
-  errors). NOTE: SDK likely already converts thrown handler errors to isError — verify.
-- Also: bump SDK pin ^1.7.0 → ^1.29.0 (installed is 1.25.1; low risk).
+## P0 — DONE (all four, 2026-07-04)
+- ✅ P0a: registerTool migration + annotations (earlier commit 9179ae0).
+- ✅ P0b: outputSchema + structuredContent on **get_gameobject, find_gameobjects,
+  get_console_logs, run_tests**. Permissive schemas (optional/passthrough, id fields
+  number|string). Deferred project_settings/profiler — highly variable shapes, low ROI;
+  add later if a client needs typed output from them.
+- ✅ P0c: `src/utils/progress.ts` (sendUnityRequestWithProgress) — time-based progress
+  heartbeats (only when client sends progressToken) + AbortSignal forwarding. New
+  `ErrorType.CANCELLED`. `McpUnity.sendRequest` takes an AbortSignal (stripped before
+  wire). Wired into run_tests, build_pipeline, recompile_scripts, asset_import, lighting.
+  NOTE: Node-side cancel only stops the wait — Unity keeps running the op (plugin has no
+  cancel channel; future work is a Unity-side cancel message).
+- ✅ P0d: VERIFIED via STDIO test — thrown handler errors (Unity down / Unity failure)
+  AND input-validation errors both surface as `isError: true` results, no protocol
+  errors leak. SDK 1.29 wraps even InvalidParams as isError.
+- ✅ SDK pin ^1.7.0 → ^1.29.0 (installed 1.29.0; had to `npm install --include=dev` to
+  restore typescript — devDeps were missing from node_modules).
 
 ## Key research findings (2026-07-04) — see ROADMAP.md for detail
 - **Unity ships its own first-party MCP now** (`com.unity.ai.assistant`, Unity 6000+,
