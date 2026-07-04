@@ -1,6 +1,14 @@
 # Unity MCP — PM Memory
 
-_Last updated: 2026-07-04 (PM given standing mandate)_
+_Last updated: 2026-07-04 (checkpoint — after CI, Unity 6.5 testbed, P0a, compile fixes)_
+
+## Quick resume (start here)
+Repo is CLEAN, on `main`, CI green, all pushed. Latest work: fixed 2 Unity 6/6.5
+compile bugs + validated live round-trip on the testbed. **Next up: remaining P0**
+(P0b outputSchema/structuredContent, P0c progress+cancellation, P0d error hygiene +
+bump SDK pin to ^1.29.0). See "Remaining P0" below. Alternative high-value pivot:
+P1.1 update_component object-reference fix. Awaiting user steer on P0-vs-P1; default
+is continue P0. Test workflow + commands are in launch.md.
 
 ## Standing mandate (from user, 2026-07-04)
 I am the PM that **controls this repo**. Goals:
