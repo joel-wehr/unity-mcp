@@ -60,6 +60,14 @@ I am the PM that **controls this repo**. Goals:
 - Spawn **subagents** (appropriate models) for research and tasks.
 - Unity **test project** goes in `C:\Users\joelw\joelwehr.com\Unity` (exists, empty).
 
+## Issue triage log
+- 2026-07-04: **Issue #1 (unity_hub create_project/list_templates)** — FIXED (fb48b5d,
+  pushed) + commented + closed. Hub CLI has no `create`/`templates` subcommands; rewrote
+  `list_templates` to enumerate bundled `ProjectTemplates/*.tgz`, and `create_project` to
+  extract a template's `ProjectData~` skeleton (or fall back to Editor `-createProject`).
+  Also fixed the dead `open_project` editorVersion branch. Windows extraction uses
+  System32 bsdtar (GNU tar rejects `C:\` paths). Verified end-to-end vs Unity 6000.5.2f1.
+
 ## Progress log
 - 2026-07-04: Committed the entire outstanding body of work in 3 logical commits
   (Unity C# plugin / MCP server expansion / docs+memory) and **pushed to origin/main**.
