@@ -60,7 +60,7 @@ namespace UnityMcp.Editor.Handlers
 
             if (!string.IsNullOrEmpty(instanceIdStr) && int.TryParse(instanceIdStr, out var instanceId))
             {
-                go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+                go = McpId.ToObject(instanceId) as GameObject;
             }
             else if (!string.IsNullOrEmpty(objectPath))
             {

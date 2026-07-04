@@ -99,7 +99,7 @@ namespace UnityMcp.Editor.Handlers.Resources.Xreal
                     anchors.Add(new
                     {
                         name = go.name.Replace("SpatialAnchor_", ""),
-                        instanceId = go.GetInstanceID(),
+                        instanceId = McpId.Get(go),
                         position = new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z },
                         rotation = new { x = go.transform.rotation.x, y = go.transform.rotation.y, z = go.transform.rotation.z, w = go.transform.rotation.w }
                     });

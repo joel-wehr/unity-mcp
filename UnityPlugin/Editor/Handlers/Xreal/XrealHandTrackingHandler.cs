@@ -229,7 +229,7 @@ namespace UnityMcp.Editor.Handlers.Xreal
             GameObject go = null;
             if (int.TryParse(targetGameObject, out var instanceId))
             {
-                go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+                go = McpId.ToObject(instanceId) as GameObject;
             }
             else
             {
@@ -270,7 +270,7 @@ namespace UnityMcp.Editor.Handlers.Xreal
             {
                 success = true,
                 gameObject = go.name,
-                instanceId = go.GetInstanceID(),
+                instanceId = McpId.Get(go),
                 interactionType = interactionType,
                 addedComponents = addedComponents,
                 configuration = new

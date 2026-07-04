@@ -69,7 +69,7 @@ namespace UnityMcp.Editor.Handlers.Resources
 
             return new
             {
-                instanceId = go.GetInstanceID(),
+                instanceId = McpId.Get(go),
                 name = go.name,
                 activeSelf = go.activeSelf,
                 childCount = go.transform.childCount,
@@ -96,7 +96,7 @@ namespace UnityMcp.Editor.Handlers.Resources
                 return new { success = false, error = "Invalid instance ID" };
             }
 
-            var go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+            var go = McpId.ToObject(instanceId) as GameObject;
             if (go == null)
             {
                 return new { success = false, error = "GameObject not found" };
@@ -107,7 +107,7 @@ namespace UnityMcp.Editor.Handlers.Resources
                 success = true,
                 gameObject = new
                 {
-                    instanceId = go.GetInstanceID(),
+                    instanceId = McpId.Get(go),
                     name = go.name,
                     tag = go.tag,
                     layer = go.layer,
@@ -129,7 +129,7 @@ namespace UnityMcp.Editor.Handlers.Resources
                     childCount = go.transform.childCount,
                     parent = go.transform.parent != null ? new
                     {
-                        instanceId = go.transform.parent.gameObject.GetInstanceID(),
+                        instanceId = McpId.Get(go.transform.parent.gameObject),
                         name = go.transform.parent.name
                     } : null
                 }

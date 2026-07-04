@@ -43,7 +43,7 @@ namespace UnityMcp.Editor.Handlers
             var id = p.GetValueOrDefault("objectId");
             if (!string.IsNullOrEmpty(path)) return GameObject.Find(path);
             if (!string.IsNullOrEmpty(id) && int.TryParse(id, out var iid))
-                return EditorUtility.InstanceIDToObject(iid) as GameObject;
+                return McpId.ToObject(iid) as GameObject;
             return Selection.activeGameObject;
         }
 
@@ -266,7 +266,7 @@ namespace UnityMcp.Editor.Handlers
             return new
             {
                 success = true,
-                instanceId = instance.GetInstanceID(),
+                instanceId = McpId.Get(instance),
                 name = instance.name,
                 message = $"Instantiated prefab '{prefab.name}'"
             };

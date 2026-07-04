@@ -44,7 +44,7 @@ namespace UnityMcp.Editor.Handlers
             GameObject go = null;
             if (!string.IsNullOrEmpty(path)) go = GameObject.Find(path);
             else if (!string.IsNullOrEmpty(id) && int.TryParse(id, out var iid))
-                go = EditorUtility.InstanceIDToObject(iid) as GameObject;
+                go = McpId.ToObject(iid) as GameObject;
             return go?.GetComponent<Renderer>();
         }
 

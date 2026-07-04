@@ -99,7 +99,7 @@ namespace UnityMcp.Editor.Handlers
             if (!string.IsNullOrEmpty(objectPath))
                 go = GameObject.Find(objectPath);
             else if (!string.IsNullOrEmpty(objectId) && int.TryParse(objectId, out var id))
-                go = EditorUtility.InstanceIDToObject(id) as GameObject;
+                go = McpId.ToObject(id) as GameObject;
 
             if (go == null)
                 return new { success = false, error = "Object not found" };

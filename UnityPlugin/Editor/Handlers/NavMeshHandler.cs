@@ -161,7 +161,7 @@ namespace UnityMcp.Editor.Handlers
             var list = agents.Select(a => new
             {
                 name = a.gameObject.name,
-                instanceId = a.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(a.gameObject),
                 agentTypeID = a.agentTypeID,
                 speed = a.speed,
                 angularSpeed = a.angularSpeed,
@@ -187,7 +187,7 @@ namespace UnityMcp.Editor.Handlers
             if (!string.IsNullOrEmpty(objectPath))
                 go = GameObject.Find(objectPath);
             if (go == null && !string.IsNullOrEmpty(objectId) && int.TryParse(objectId, out var id))
-                go = EditorUtility.InstanceIDToObject(id) as GameObject;
+                go = McpId.ToObject(id) as GameObject;
             if (go == null)
                 return new { success = false, error = "objectPath or objectId required" };
 
@@ -207,7 +207,7 @@ namespace UnityMcp.Editor.Handlers
                 agent.stoppingDistance = sdf;
 
             EditorUtility.SetDirty(go);
-            return new { success = true, message = $"NavMeshAgent configured on '{go.name}'", instanceId = go.GetInstanceID() };
+            return new { success = true, message = $"NavMeshAgent configured on '{go.name}'", instanceId = McpId.Get(go) };
         }
 
         private object FindPath(Dictionary<string, string> p)
@@ -276,7 +276,7 @@ namespace UnityMcp.Editor.Handlers
             var list = obstacles.Select(o => new
             {
                 name = o.gameObject.name,
-                instanceId = o.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(o.gameObject),
                 shape = o.shape.ToString(),
                 carving = o.carving,
                 size = new { x = o.size.x, y = o.size.y, z = o.size.z },
@@ -295,7 +295,7 @@ namespace UnityMcp.Editor.Handlers
             if (!string.IsNullOrEmpty(objectPath))
                 go = GameObject.Find(objectPath);
             if (go == null && !string.IsNullOrEmpty(objectId) && int.TryParse(objectId, out var id))
-                go = EditorUtility.InstanceIDToObject(id) as GameObject;
+                go = McpId.ToObject(id) as GameObject;
             if (go == null)
                 return new { success = false, error = "objectPath or objectId required" };
 
@@ -335,7 +335,7 @@ namespace UnityMcp.Editor.Handlers
                 return new
                 {
                     name = go?.name ?? "unknown",
-                    instanceId = go?.GetInstanceID() ?? 0
+                    instanceId = McpId.Get(go)
                 };
             }).ToList();
 

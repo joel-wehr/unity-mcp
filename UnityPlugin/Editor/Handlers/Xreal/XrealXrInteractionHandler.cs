@@ -148,7 +148,7 @@ namespace UnityMcp.Editor.Handlers.Xreal
                 {
                     success = false,
                     error = $"XR Origin already exists: {rigName}",
-                    existingInstanceId = existingRig.GetInstanceID()
+                    existingInstanceId = McpId.Get(existingRig)
                 };
             }
 
@@ -241,7 +241,7 @@ namespace UnityMcp.Editor.Handlers.Xreal
             return new
             {
                 success = true,
-                instanceId = xrOrigin.GetInstanceID(),
+                instanceId = McpId.Get(xrOrigin),
                 rigName = rigName,
                 hierarchy = new
                 {
@@ -313,7 +313,7 @@ namespace UnityMcp.Editor.Handlers.Xreal
             GameObject go = null;
             if (int.TryParse(targetGameObject, out var instanceId))
             {
-                go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+                go = McpId.ToObject(instanceId) as GameObject;
             }
             else
             {
@@ -387,7 +387,7 @@ namespace UnityMcp.Editor.Handlers.Xreal
             {
                 success = true,
                 gameObject = go.name,
-                instanceId = go.GetInstanceID(),
+                instanceId = McpId.Get(go),
                 interactorType = interactorType,
                 hand = hand,
                 addedComponents = addedComponents,
@@ -513,7 +513,7 @@ namespace UnityMcp.Editor.Handlers.Xreal
             return new
             {
                 success = true,
-                instanceId = canvasGo.GetInstanceID(),
+                instanceId = McpId.Get(canvasGo),
                 canvasName = canvasName,
                 size = new { width = width, height = height },
                 pixelsPerMeter = pixelsPerMeter,

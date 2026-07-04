@@ -2,6 +2,24 @@
 
 This document tracks problems encountered while building an iOS game, and features that need to be added to the MCP server.
 
+## Session: 2026-07-04 (PM — CI + live Unity 6.5 validation)
+
+Stood up a dedicated Unity 6 test project (`C:\Users\joelw\joelwehr.com\Unity\McpTestbed`,
+Unity 6000.5.2f1) and validated the full stack end-to-end. Two install-blocking bugs found
+that only surface when compiling against a real editor (TypeScript typecheck can't catch them):
+
+### Errors & Bugs Fixed
+- [x] Plugin fails to compile in a fresh Unity 6 project: `PlaytestHandler.cs` uses `UnityEngine.UI`, `UnityEngine.EventSystems`, and `TMPro`, but `UnityPlugin/package.json` never declared `com.unity.ugui` | Unity 6 no longer installs uGUI by default (only `com.unity.modules.ui`), so `UnityEngine.UI`/`EventSystems`/`TMPro` are all missing → CS0234/CS0246, bridge never starts | Fixed: added `"dependencies": { "com.unity.ugui": "2.0.0" }` to `UnityPlugin/package.json` (resolves to 2.5.0 on 6.5; also provides the merged TextMeshPro). Verified: uGUI resolves, those errors gone.
+- [x] Unity 6.5 promoted `Object.GetInstanceID()` and `EditorUtility.InstanceIDToObject(int)` to obsolete-**errors** (InstanceID → EntityId migration) | 192 CS0619 errors across 64 call sites in 22 handlers; plugin won't compile on 6.5 | Fixed: `EntityId` is an opaque struct that intentionally won't convert to the `int` ids our JSON-RPC protocol uses, but the obsolete APIs still work at runtime and still return those ints — the obsolete attribute only blocks compile-time. Added a cached-reflection shim `UnityMcp.Editor.Core.McpId` (`McpId.Get(obj)` / `McpId.ToObject(id)`) invoked via reflection so it compiles on 2022.3 / 6.0 / 6.5 without changing the id contract, and codemodded all 64 sites. Verified: clean compile on 6000.5.2f1.
+
+### Validation performed (round-trip, live)
+- Bridge starts on port 8090; C# side reports "Registered 96 tool handlers and 13 resource handlers".
+- `get_console_logs` (read) ✅, `send_console_log` (write, console count incremented) ✅, `create_scene` → `Assets/Scenes/McpRoundTrip.unity` ✅. Full path Node client → WebSocket → Unity editor confirmed working.
+
+### Notes / follow-ups
+- The `com.unity.ugui` hard dependency forces uGUI on every consumer. Acceptable for a game-dev tool, but a future refinement could `#if`-guard `PlaytestHandler` behind a versionDefine so the core server compiles in uGUI-less projects too.
+- Only Unity 6.5 tested this session; 2022.3 LTS path relies on the reflection shim being version-agnostic (GetInstanceID still valid there). Worth a confirming compile on 2022.3.62f3.
+
 ## Session: 2026-05-20 (XREAL-DEV — QR scanning pipeline)
 
 ### Errors & Bugs Fixed

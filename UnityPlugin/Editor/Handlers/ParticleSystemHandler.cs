@@ -54,7 +54,7 @@ namespace UnityMcp.Editor.Handlers
             var objectId = p.GetValueOrDefault("objectId");
             if (!string.IsNullOrEmpty(objectId) && int.TryParse(objectId, out var id))
             {
-                var obj = EditorUtility.InstanceIDToObject(id) as GameObject;
+                var obj = McpId.ToObject(id) as GameObject;
                 if (obj != null) return obj.GetComponent<ParticleSystem>();
             }
 
@@ -86,7 +86,7 @@ namespace UnityMcp.Editor.Handlers
             return new
             {
                 success = true,
-                instanceId = go.GetInstanceID(),
+                instanceId = McpId.Get(go),
                 name = go.name,
                 message = $"Created particle system '{name}'"
             };
@@ -107,7 +107,7 @@ namespace UnityMcp.Editor.Handlers
             {
                 success = true,
                 name = ps.gameObject.name,
-                instanceId = ps.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(ps.gameObject),
                 isPlaying = ps.isPlaying,
                 particleCount = ps.particleCount,
                 main = new
@@ -300,7 +300,7 @@ namespace UnityMcp.Editor.Handlers
             var list = systems.Select(ps => new
             {
                 name = ps.gameObject.name,
-                instanceId = ps.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(ps.gameObject),
                 isPlaying = ps.isPlaying,
                 particleCount = ps.particleCount,
                 maxParticles = ps.main.maxParticles,

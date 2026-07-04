@@ -210,7 +210,7 @@ namespace UnityMcp.Editor.Handlers.Xreal
                 success = true,
                 anchorId = anchorId,
                 anchorName = anchorName,
-                gameObjectInstanceId = anchorGo.GetInstanceID(),
+                gameObjectInstanceId = McpId.Get(anchorGo),
                 position = new { x = position.x, y = position.y, z = position.z },
                 rotation = new { x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w },
                 persistent = persistent,
@@ -246,7 +246,7 @@ namespace UnityMcp.Editor.Handlers.Xreal
                             anchors.Add(new
                             {
                                 name = go.name.Replace("SpatialAnchor_", ""),
-                                instanceId = go.GetInstanceID(),
+                                instanceId = McpId.Get(go),
                                 position = includeTransform ? new { x = go.transform.position.x, y = go.transform.position.y, z = go.transform.position.z } : null
                             });
                         }

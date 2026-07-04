@@ -74,7 +74,7 @@ namespace UnityMcp.Editor.Handlers
             // Try to parse as instance ID
             if (int.TryParse(idOrName, out var instanceId))
             {
-                go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+                go = McpId.ToObject(instanceId) as GameObject;
             }
 
             // Try to find by path
@@ -112,7 +112,7 @@ namespace UnityMcp.Editor.Handlers
             // Find or create GameObject
             if (!string.IsNullOrEmpty(instanceIdStr) && int.TryParse(instanceIdStr, out var instanceId))
             {
-                go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+                go = McpId.ToObject(instanceId) as GameObject;
             }
             else if (!string.IsNullOrEmpty(objectPath))
             {
@@ -230,7 +230,7 @@ namespace UnityMcp.Editor.Handlers
 
             if (!string.IsNullOrEmpty(instanceIdStr) && int.TryParse(instanceIdStr, out var instanceId))
             {
-                go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+                go = McpId.ToObject(instanceId) as GameObject;
             }
             else if (!string.IsNullOrEmpty(objectPath))
             {
@@ -265,7 +265,7 @@ namespace UnityMcp.Editor.Handlers
 
             if (!string.IsNullOrEmpty(instanceIdStr) && int.TryParse(instanceIdStr, out var instanceId))
             {
-                go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+                go = McpId.ToObject(instanceId) as GameObject;
             }
             else if (!string.IsNullOrEmpty(objectPath))
             {
@@ -354,7 +354,7 @@ namespace UnityMcp.Editor.Handlers
             .Take(maxResults)
             .Select(go => new
             {
-                instanceId = go.GetInstanceID(),
+                instanceId = McpId.Get(go),
                 name = go.name,
                 path = GetGameObjectPath(go),
                 tag = go.tag,
@@ -381,7 +381,7 @@ namespace UnityMcp.Editor.Handlers
 
             if (!string.IsNullOrEmpty(instanceIdStr) && int.TryParse(instanceIdStr, out var instanceId))
             {
-                go = EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+                go = McpId.ToObject(instanceId) as GameObject;
             }
             else if (!string.IsNullOrEmpty(objectPath))
             {
@@ -404,7 +404,7 @@ namespace UnityMcp.Editor.Handlers
             {
                 success = true,
                 message = $"Selected: {go.name}",
-                instanceId = go.GetInstanceID()
+                instanceId = McpId.Get(go)
             };
         }
 
@@ -420,7 +420,7 @@ namespace UnityMcp.Editor.Handlers
                         success = true,
                         selection = Selection.gameObjects.Select(go => new
                         {
-                            instanceId = go.GetInstanceID(),
+                            instanceId = McpId.Get(go),
                             name = go.name,
                             path = GetGameObjectPath(go)
                         }).ToList()
@@ -439,7 +439,7 @@ namespace UnityMcp.Editor.Handlers
         {
             return new
             {
-                instanceId = go.GetInstanceID(),
+                instanceId = McpId.Get(go),
                 name = go.name,
                 path = GetGameObjectPath(go),
                 tag = go.tag,

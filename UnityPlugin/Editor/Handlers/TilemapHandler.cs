@@ -53,7 +53,7 @@ namespace UnityMcp.Editor.Handlers
             var tilemapId = p.GetValueOrDefault("tilemapId");
             if (!string.IsNullOrEmpty(tilemapId) && int.TryParse(tilemapId, out var id))
             {
-                var obj = EditorUtility.InstanceIDToObject(id) as GameObject;
+                var obj = McpId.ToObject(id) as GameObject;
                 if (obj != null) return obj.GetComponent<Tilemap>();
             }
 
@@ -97,7 +97,7 @@ namespace UnityMcp.Editor.Handlers
             return new
             {
                 success = true,
-                instanceId = tilemapGO.GetInstanceID(),
+                instanceId = McpId.Get(tilemapGO),
                 name = tilemapGO.name,
                 gridName = gridGO.name,
                 message = $"Created tilemap '{name}' under grid '{gridGO.name}'"
@@ -117,7 +117,7 @@ namespace UnityMcp.Editor.Handlers
             {
                 success = true,
                 name = tilemap.gameObject.name,
-                instanceId = tilemap.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(tilemap.gameObject),
                 cellSize = new { x = tilemap.cellSize.x, y = tilemap.cellSize.y, z = tilemap.cellSize.z },
                 boundsMin = new { x = bounds.xMin, y = bounds.yMin },
                 boundsMax = new { x = bounds.xMax, y = bounds.yMax },
@@ -286,7 +286,7 @@ namespace UnityMcp.Editor.Handlers
                 return new
                 {
                     name = t.gameObject.name,
-                    instanceId = t.gameObject.GetInstanceID(),
+                    instanceId = McpId.Get(t.gameObject),
                     tileCount = CountTiles(t),
                     sortingOrder = renderer?.sortingOrder ?? 0
                 };

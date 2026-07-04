@@ -342,7 +342,7 @@ namespace UnityMcp.Editor.Handlers
             if (!string.IsNullOrEmpty(path))
                 return GameObject.Find(path);
             if (!string.IsNullOrEmpty(id) && int.TryParse(id, out var instanceId))
-                return EditorUtility.InstanceIDToObject(instanceId) as GameObject;
+                return McpId.ToObject(instanceId) as GameObject;
             return null;
         }
 

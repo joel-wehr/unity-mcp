@@ -244,7 +244,7 @@ namespace UnityMcp.Editor.Handlers
 
             if (!string.IsNullOrEmpty(probeIdStr) && int.TryParse(probeIdStr, out var probeId))
             {
-                var obj = EditorUtility.InstanceIDToObject(probeId);
+                var obj = McpId.ToObject(probeId);
                 var probe = (obj as GameObject)?.GetComponent<ReflectionProbe>();
                 if (probe == null)
                     return new { success = false, error = $"ReflectionProbe not found with instance ID: {probeId}" };

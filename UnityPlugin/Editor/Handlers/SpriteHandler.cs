@@ -237,7 +237,7 @@ namespace UnityMcp.Editor.Handlers
             var list = renderers.Select(r => new
             {
                 name = r.gameObject.name,
-                instanceId = r.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(r.gameObject),
                 spriteName = r.sprite?.name ?? "none",
                 color = $"({r.color.r:F2}, {r.color.g:F2}, {r.color.b:F2}, {r.color.a:F2})",
                 flipX = r.flipX,
@@ -259,7 +259,7 @@ namespace UnityMcp.Editor.Handlers
             if (!string.IsNullOrEmpty(objectPath))
                 go = GameObject.Find(objectPath);
             if (go == null && !string.IsNullOrEmpty(objectId) && int.TryParse(objectId, out var id))
-                go = EditorUtility.InstanceIDToObject(id) as GameObject;
+                go = McpId.ToObject(id) as GameObject;
             if (go == null)
                 return new { success = false, error = "objectPath or objectId required" };
 

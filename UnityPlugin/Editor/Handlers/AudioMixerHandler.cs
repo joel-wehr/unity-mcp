@@ -221,7 +221,7 @@ namespace UnityMcp.Editor.Handlers
             var list = sources.Select(s => new
             {
                 name = s.gameObject.name,
-                instanceId = s.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(s.gameObject),
                 clip = s.clip?.name ?? "none",
                 isPlaying = s.isPlaying,
                 volume = s.volume,

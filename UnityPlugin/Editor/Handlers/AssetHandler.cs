@@ -157,7 +157,7 @@ namespace UnityMcp.Editor.Handlers
             }
             else if (!string.IsNullOrEmpty(parentIdStr) && int.TryParse(parentIdStr, out var parentId))
             {
-                var parentGo = EditorUtility.InstanceIDToObject(parentId) as GameObject;
+                var parentGo = McpId.ToObject(parentId) as GameObject;
                 parent = parentGo?.transform;
             }
 
@@ -191,7 +191,7 @@ namespace UnityMcp.Editor.Handlers
             return new
             {
                 success = true,
-                instanceId = instance.GetInstanceID(),
+                instanceId = McpId.Get(instance),
                 name = instance.name,
                 assetPath = assetPath
             };
@@ -372,7 +372,7 @@ namespace UnityMcp.Editor.Handlers
 
             if (!string.IsNullOrEmpty(instanceIdStr) && int.TryParse(instanceIdStr, out var instanceId))
             {
-                var obj = EditorUtility.InstanceIDToObject(instanceId);
+                var obj = McpId.ToObject(instanceId);
                 var path = AssetDatabase.GetAssetPath(obj);
                 return new { success = !string.IsNullOrEmpty(path), path = path, instanceId = instanceId };
             }

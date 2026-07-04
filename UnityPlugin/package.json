@@ -23,6 +23,9 @@
     "url": "https://github.com/joelwehr"
   },
   "type": "tool",
+  "dependencies": {
+    "com.unity.ugui": "2.0.0"
+  },
   "samples": [
     {
       "displayName": "XREAL Demo Scene",

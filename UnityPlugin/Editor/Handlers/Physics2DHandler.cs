@@ -107,7 +107,7 @@ namespace UnityMcp.Editor.Handlers
                     normal = new { x = hit.normal.x, y = hit.normal.y },
                     distance = hit.distance,
                     colliderName = hit.collider.gameObject.name,
-                    colliderInstanceId = hit.collider.gameObject.GetInstanceID()
+                    colliderInstanceId = McpId.Get(hit.collider.gameObject)
                 };
             }
 
@@ -124,7 +124,7 @@ namespace UnityMcp.Editor.Handlers
             var list = results.Take(50).Select(c => new
             {
                 name = c.gameObject.name,
-                instanceId = c.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(c.gameObject),
                 colliderType = c.GetType().Name,
                 isTrigger = c.isTrigger
             }).ToList();
@@ -144,7 +144,7 @@ namespace UnityMcp.Editor.Handlers
             var list = results.Take(50).Select(c => new
             {
                 name = c.gameObject.name,
-                instanceId = c.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(c.gameObject),
                 colliderType = c.GetType().Name,
                 isTrigger = c.isTrigger
             }).ToList();
@@ -158,7 +158,7 @@ namespace UnityMcp.Editor.Handlers
             var list = rbs.Select(rb => new
             {
                 name = rb.gameObject.name,
-                instanceId = rb.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(rb.gameObject),
                 bodyType = rb.bodyType.ToString(),
                 mass = rb.mass,
 #if UNITY_6000_0_OR_NEWER
@@ -261,7 +261,7 @@ namespace UnityMcp.Editor.Handlers
             var list = colliders.Take(100).Select(c => new
             {
                 name = c.gameObject.name,
-                instanceId = c.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(c.gameObject),
                 type = c.GetType().Name,
                 isTrigger = c.isTrigger,
                 enabled = c.enabled,
@@ -321,7 +321,7 @@ namespace UnityMcp.Editor.Handlers
             var list = joints.Take(50).Select(j => new
             {
                 name = j.gameObject.name,
-                instanceId = j.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(j.gameObject),
                 type = j.GetType().Name,
                 enabled = j.enabled,
                 connectedBody = j.connectedBody?.gameObject.name ?? "none",
@@ -338,7 +338,7 @@ namespace UnityMcp.Editor.Handlers
             var list = effectors.Take(50).Select(e => new
             {
                 name = e.gameObject.name,
-                instanceId = e.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(e.gameObject),
                 type = e.GetType().Name,
                 enabled = e.enabled,
                 useColliderMask = e.useColliderMask
@@ -402,7 +402,7 @@ namespace UnityMcp.Editor.Handlers
             var id = p.GetValueOrDefault("objectId");
             if (!string.IsNullOrEmpty(path)) return GameObject.Find(path);
             if (!string.IsNullOrEmpty(id) && int.TryParse(id, out var iid))
-                return EditorUtility.InstanceIDToObject(iid) as GameObject;
+                return McpId.ToObject(iid) as GameObject;
             return Selection.activeGameObject;
         }
     }

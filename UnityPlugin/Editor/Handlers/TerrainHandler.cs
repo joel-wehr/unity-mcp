@@ -51,7 +51,7 @@ namespace UnityMcp.Editor.Handlers
             var terrainId = p.GetValueOrDefault("terrainId");
             if (!string.IsNullOrEmpty(terrainId) && int.TryParse(terrainId, out var id))
             {
-                var obj = EditorUtility.InstanceIDToObject(id) as GameObject;
+                var obj = McpId.ToObject(id) as GameObject;
                 if (obj != null) return obj.GetComponent<Terrain>();
             }
 
@@ -92,7 +92,7 @@ namespace UnityMcp.Editor.Handlers
             return new
             {
                 success = true,
-                instanceId = go.GetInstanceID(),
+                instanceId = McpId.Get(go),
                 name = go.name,
                 dataPath = assetPath,
                 size = new { x = width, y = height, z = length },
@@ -111,7 +111,7 @@ namespace UnityMcp.Editor.Handlers
             {
                 success = true,
                 name = terrain.name,
-                instanceId = terrain.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(terrain.gameObject),
                 position = new { x = terrain.transform.position.x, y = terrain.transform.position.y, z = terrain.transform.position.z },
                 size = new { x = data.size.x, y = data.size.y, z = data.size.z },
                 heightmapResolution = data.heightmapResolution,
@@ -457,7 +457,7 @@ namespace UnityMcp.Editor.Handlers
             var list = terrains.Select(t => new
             {
                 name = t.name,
-                instanceId = t.gameObject.GetInstanceID(),
+                instanceId = McpId.Get(t.gameObject),
                 position = new { x = t.transform.position.x, y = t.transform.position.y, z = t.transform.position.z },
                 size = new { x = t.terrainData.size.x, y = t.terrainData.size.y, z = t.terrainData.size.z }
             }).ToList();
