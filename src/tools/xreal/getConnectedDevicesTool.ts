@@ -4,6 +4,7 @@ import { Logger } from '../../utils/logger.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { getToolAnnotations } from "../../utils/toolAnnotations.js";
 
 const toolName = 'get_connected_devices';
 const toolDescription = `Lists all Android devices connected via ADB. Shows device IDs, models, Android versions, and connection status. Useful for verifying device setup before deployment.`;
@@ -22,10 +23,13 @@ const paramsSchema = z.object({
 export function registerGetConnectedDevicesTool(server: McpServer, mcpUnity: McpUnity, logger: Logger) {
   logger.info(`Registering tool: ${toolName}`);
 
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: z.infer<typeof paramsSchema>) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);

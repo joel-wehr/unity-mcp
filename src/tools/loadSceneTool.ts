@@ -3,6 +3,7 @@ import { McpUnity } from '../unity/mcpUnity.js';
 import { McpUnityError, ErrorType } from '../utils/errors.js';
 import * as z from 'zod';
 import { Logger } from '../utils/logger.js';
+import { getToolAnnotations } from "../utils/toolAnnotations.js";
 
 const toolName = 'load_scene';
 const toolDescription = 'Loads a scene by path or name. Supports additive loading (default: false)';
@@ -17,10 +18,13 @@ const paramsSchema = z.object({
 export function registerLoadSceneTool(server: McpServer, mcpUnity: McpUnity, logger: Logger) {
   logger.info(`Registering tool: ${toolName}`);
 
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: any) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);

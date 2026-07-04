@@ -7,6 +7,7 @@ import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import * as path from 'path';
 import * as fs from 'fs';
+import { getToolAnnotations } from "../utils/toolAnnotations.js";
 
 const execAsync = promisify(exec);
 
@@ -188,10 +189,13 @@ async function launchUnityEditor(
 export function registerUnityHubTool(server: McpServer, logger: Logger) {
   logger.info(`Registering tool: ${toolName}`);
 
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: any) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);

@@ -4,6 +4,7 @@ import { Logger } from '../../utils/logger.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { getToolAnnotations } from "../../utils/toolAnnotations.js";
 
 const toolName = 'configure_passthrough';
 const toolDescription = `Configures the camera passthrough for mixed reality mode. Passthrough shows the real world through the glasses with virtual content overlaid.`;
@@ -26,10 +27,13 @@ const paramsSchema = z.object({
 export function registerConfigurePassthroughTool(server: McpServer, mcpUnity: McpUnity, logger: Logger) {
   logger.info(`Registering tool: ${toolName}`);
 
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: z.infer<typeof paramsSchema>) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);

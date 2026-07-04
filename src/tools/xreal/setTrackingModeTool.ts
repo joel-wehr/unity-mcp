@@ -4,6 +4,7 @@ import { Logger } from '../../utils/logger.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { getToolAnnotations } from "../../utils/toolAnnotations.js";
 
 const toolName = 'set_tracking_mode';
 const toolDescription = `Sets the tracking mode for the XREAL glasses. 0DoF provides rotation only, 3DoF adds positional tracking relative to start, and 6DoF provides full positional and rotational tracking.`;
@@ -21,10 +22,13 @@ const paramsSchema = z.object({
 export function registerSetTrackingModeTool(server: McpServer, mcpUnity: McpUnity, logger: Logger) {
   logger.info(`Registering tool: ${toolName}`);
 
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: z.infer<typeof paramsSchema>) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);

@@ -4,6 +4,7 @@ import { Logger } from '../../utils/logger.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { getToolAnnotations } from "../../utils/toolAnnotations.js";
 
 const toolName = 'configure_occlusion';
 const toolDescription = `Configures depth-based occlusion settings. Occlusion allows real-world objects to properly hide virtual objects that are behind them, creating realistic mixed reality.`;
@@ -26,10 +27,13 @@ const paramsSchema = z.object({
 export function registerConfigureOcclusionTool(server: McpServer, mcpUnity: McpUnity, logger: Logger) {
   logger.info(`Registering tool: ${toolName}`);
 
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: z.infer<typeof paramsSchema>) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);

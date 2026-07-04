@@ -4,6 +4,7 @@ import { Logger } from '../../utils/logger.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { getToolAnnotations } from "../../utils/toolAnnotations.js";
 
 const toolName = 'get_xr_performance_metrics';
 const toolDescription = `Gets real-time XR performance metrics including frame rate, frame times, GPU/CPU usage, thermal state, and memory usage. Essential for optimizing mobile XR experiences.`;
@@ -25,10 +26,13 @@ const paramsSchema = z.object({
 export function registerGetXrPerformanceMetricsTool(server: McpServer, mcpUnity: McpUnity, logger: Logger) {
   logger.info(`Registering tool: ${toolName}`);
 
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: z.infer<typeof paramsSchema>) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);

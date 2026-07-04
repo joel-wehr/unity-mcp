@@ -4,6 +4,7 @@ import { Logger } from '../utils/logger.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { getToolAnnotations } from "../utils/toolAnnotations.js";
 
 // Constants for the tool
 const toolName = 'update_gameobject';
@@ -26,11 +27,14 @@ export function registerUpdateGameObjectTool(server: McpServer, mcpUnity: McpUni
     logger.info(`Registering tool: ${toolName}`);
 
     // Register this tool with the MCP server
-    server.tool(
-      toolName,
-      toolDescription,
-      paramsSchema.shape,
-      async (params: any) => {
+    server.registerTool(
+    toolName,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
+    async (params: any) => {
         try {
           logger.info(`Executing tool: ${toolName}`, params);
           const result = await toolHandler(mcpUnity, params);
@@ -41,7 +45,7 @@ export function registerUpdateGameObjectTool(server: McpServer, mcpUnity: McpUni
           throw error;
         }
       }
-    );
+  );
 }
 
 /**

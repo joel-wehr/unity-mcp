@@ -4,6 +4,7 @@ import { McpUnity } from '../unity/mcpUnity.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { McpUnityError, ErrorType } from '../utils/errors.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { getToolAnnotations } from "../utils/toolAnnotations.js";
 
 // Constants for the tool
 const toolName = 'duplicate_gameobject';
@@ -27,10 +28,13 @@ export function registerDuplicateGameObjectTool(server: McpServer, mcpUnity: Mcp
   logger.info(`Registering tool: ${toolName}`);
 
   // Register this tool with the MCP server
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: any) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);

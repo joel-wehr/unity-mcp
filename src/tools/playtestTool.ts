@@ -2,12 +2,14 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod";
 import { McpUnity } from "../unity/mcpUnity.js";
 import { Logger } from "../utils/logger.js";
+import { getToolAnnotations } from "../utils/toolAnnotations.js";
 
 export function registerPlaytestTool(server: McpServer, mcpUnity: McpUnity, logger: Logger) {
-  server.tool(
+  server.registerTool(
     "playtest",
-    "Autonomous playtesting: observe game state, simulate taps, click UI elements, capture screenshots, and interact with game objects during Unity play mode",
     {
+      description: "Autonomous playtesting: observe game state, simulate taps, click UI elements, capture screenshots, and interact with game objects during Unity play mode",
+      inputSchema: {
       action: z.enum([
         "observe",
         "tap",
@@ -67,6 +69,8 @@ export function registerPlaytestTool(server: McpServer, mcpUnity: McpUnity, logg
       start_y: z.number().optional().describe("Start screen Y for swipe action"),
       end_x: z.number().optional().describe("End screen X for swipe action"),
       end_y: z.number().optional().describe("End screen Y for swipe action"),
+    },
+      annotations: getToolAnnotations("playtest"),
     },
     async ({ action, x, y, name, value, width, height, condition, sceneName, text, objectName, objectPath, componentType, methodName, args, col1, row1, col2, row2, start_x, start_y, end_x, end_y }) => {
       const params: Record<string, string> = { action };

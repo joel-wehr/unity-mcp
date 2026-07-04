@@ -4,6 +4,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { spawn } from 'child_process';
 import path from 'path';
+import { getToolAnnotations } from '../utils/toolAnnotations.js';
 
 // Constants for the tool
 const toolName = 'search_unity_knowledge';
@@ -51,10 +52,13 @@ export function registerSearchUnityKnowledgeTool(server: McpServer, logger: Logg
   logger.info(`Registering tool: ${toolName}`);
 
   // Register this tool with the MCP server
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: z.infer<typeof paramsSchema>) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);
@@ -151,6 +155,7 @@ else:
         metadata = r.get('metadata', {})
         if isinstance(metadata, str):
             import json as j
+import { getToolAnnotations } from "../utils/toolAnnotations.js";
             try:
                 metadata = j.loads(metadata)
             except:

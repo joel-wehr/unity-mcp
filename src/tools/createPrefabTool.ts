@@ -3,6 +3,7 @@ import { McpUnity } from '../unity/mcpUnity.js';
 import { McpUnityError, ErrorType } from '../utils/errors.js';
 import * as z from 'zod';
 import { Logger } from '../utils/logger.js';
+import { getToolAnnotations } from "../utils/toolAnnotations.js";
 
 // Constants for the tool
 const toolName = 'create_prefab';
@@ -25,10 +26,13 @@ const paramsSchema = z.object({
 export function registerCreatePrefabTool(server: McpServer, mcpUnity: McpUnity, logger: Logger) {
   logger.info(`Registering tool: ${toolName}`);
 
-  server.tool(
+  server.registerTool(
     toolName,
-    toolDescription,
-    paramsSchema.shape,
+    {
+      description: toolDescription,
+      inputSchema: paramsSchema.shape,
+      annotations: getToolAnnotations(toolName),
+    },
     async (params: any) => {
       try {
         logger.info(`Executing tool: ${toolName}`, params);
