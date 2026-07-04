@@ -1,0 +1,31 @@
+{
+    "name": "UnityMcp.Editor",
+    "rootNamespace": "UnityMcp.Editor",
+    "references": [
+        "UnityMcp.Runtime",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.xr.management",
+            "expression": "4.0.0",
+            "define": "XR_MANAGEMENT_ENABLED"
+        },
+        {
+            "name": "com.unity.test-framework",
+            "expression": "1.0.0",
+            "define": "TEST_FRAMEWORK_ENABLED"
+        }
+    ],
+    "noEngineReferences": false
+}

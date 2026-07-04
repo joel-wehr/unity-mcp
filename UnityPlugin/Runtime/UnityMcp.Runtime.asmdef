@@ -1,0 +1,20 @@
+{
+    "name": "UnityMcp.Runtime",
+    "rootNamespace": "UnityMcp",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.xr.management",
+            "expression": "4.0.0",
+            "define": "XR_MANAGEMENT_ENABLED"
+        }
+    ],
+    "noEngineReferences": false
+}

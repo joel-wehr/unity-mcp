@@ -1,0 +1,33 @@
+{
+  "name": "com.joelwehr.unity-mcp",
+  "version": "1.0.0",
+  "displayName": "Unity MCP Bridge",
+  "description": "Model Context Protocol bridge for Unity Editor integration with AI assistants. Includes XREAL One Pro mixed reality development support.",
+  "unity": "2021.3",
+  "unityRelease": "0f1",
+  "documentationUrl": "https://github.com/joelwehr/unity-mcp",
+  "changelogUrl": "https://github.com/joelwehr/unity-mcp/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/joelwehr/unity-mcp/blob/main/LICENSE",
+  "keywords": [
+    "mcp",
+    "ai",
+    "claude",
+    "xreal",
+    "mixed-reality",
+    "ar",
+    "vr"
+  ],
+  "author": {
+    "name": "Joel Wehr",
+    "email": "joelwehr@example.com",
+    "url": "https://github.com/joelwehr"
+  },
+  "type": "tool",
+  "samples": [
+    {
+      "displayName": "XREAL Demo Scene",
+      "description": "Sample scene with hand tracking and spatial anchors",
+      "path": "Samples~/XrealDemo"
+    }
+  ]
+}
