@@ -27,11 +27,19 @@
     "ai",
     "assistant"
   ],
-  "author": "Joel Wehr",
+  "author": {
+    "name": "Joel Wehr",
+    "email": "joel.wehr@gmail.com",
+    "url": "https://github.com/joel-wehr"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joelwehr/unity-mcp.git"
+    "url": "git+https://github.com/joel-wehr/unity-mcp.git"
+  },
+  "homepage": "https://github.com/joel-wehr/unity-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/joel-wehr/unity-mcp/issues"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

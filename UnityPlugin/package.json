@@ -5,9 +5,9 @@
   "description": "Model Context Protocol bridge for Unity Editor integration with AI assistants. Includes XREAL One Pro mixed reality development support.",
   "unity": "2021.3",
   "unityRelease": "0f1",
-  "documentationUrl": "https://github.com/joelwehr/unity-mcp",
-  "changelogUrl": "https://github.com/joelwehr/unity-mcp/blob/main/CHANGELOG.md",
-  "licensesUrl": "https://github.com/joelwehr/unity-mcp/blob/main/LICENSE",
+  "documentationUrl": "https://github.com/joel-wehr/unity-mcp",
+  "changelogUrl": "https://github.com/joel-wehr/unity-mcp/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/joel-wehr/unity-mcp/blob/main/LICENSE",
   "keywords": [
     "mcp",
     "ai",
@@ -19,8 +19,8 @@
   ],
   "author": {
     "name": "Joel Wehr",
-    "email": "joelwehr@example.com",
-    "url": "https://github.com/joelwehr"
+    "email": "joel.wehr@gmail.com",
+    "url": "https://github.com/joel-wehr"
   },
   "type": "tool",
   "dependencies": {
