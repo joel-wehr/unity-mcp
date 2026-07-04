@@ -19,7 +19,7 @@ risk is low, but do a live round-trip on the testbed to confirm get_gameobject /
 find_gameobjects / get_console_logs / run_tests don't trip output validation → isError.
 
 ## Recurring issue triage (set up 2026-07-04)
-An in-session `/loop` (CronDelete job **25b49b00**, cron `7 */6 * * *` — every 6h at :07)
+An in-session `/loop` (CronDelete job **a9fe344a**, cron `30 * * * *` — hourly at :30)
 polls `gh issue list --repo joel-wehr/unity-mcp --state open` and triages per the mandate
 (implement+push+close, or Radar+summarize if it needs human judgment). Uses local `gh`
 auth + Radar + Unity testbed. **Session-only: dies when the cockpit closes, and cron jobs
