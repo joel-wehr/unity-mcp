@@ -76,7 +76,7 @@ async function toolHandler(mcpUnity: McpUnity, params: z.infer<typeof paramsSche
     content: [
       {
         type: 'text',
-        text: response.message
+        text: JSON.stringify(response, null, 2)
       },
       {
         type: 'text',

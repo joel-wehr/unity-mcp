@@ -91,7 +91,7 @@ async function toolHandler(mcpUnity: McpUnity, params: any = {}): Promise<CallTo
     content: [
       {
         type: 'text',
-        text: response.message
+        text: JSON.stringify(response, null, 2)
       },
       {
         type: 'text',

@@ -59,27 +59,12 @@ async function resourceHandler(mcpUnity: McpUnity): Promise<ReadResourceResult> 
     );
   }
 
-  // Transform the data into a structured format
-  const assets = response.assets || [];
-
-  const assetsData = {
-    assets: assets.map((asset: any) => ({
-      name: asset.name,
-      filename: asset.filename,
-      path: asset.path,
-      type: asset.type,
-      extension: asset.extension,
-      guid: asset.guid,
-      size: asset.size
-    }))
-  };
-
   return {
     contents: [
       {
         uri: resourceUri,
         mimeType: resourceMimeType,
-        text: JSON.stringify(assetsData, null, 2)
+        text: JSON.stringify(response, null, 2)
       }
     ]
   };

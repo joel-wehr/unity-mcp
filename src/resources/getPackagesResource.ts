@@ -59,38 +59,11 @@ async function resourceHandler(mcpUnity: McpUnity): Promise<ReadResourceResult> 
     );
   }
 
-  // Transform the data into a structured format
-  const projectPackages = response.projectPackages || [];
-  const registryPackages = response.registryPackages || [];
-
-  const packagesData = {
-    projectPackages: projectPackages.map((pkg: any) => ({
-      name: pkg.name,
-      displayName: pkg.displayName,
-      version: pkg.version,
-      description: pkg.description,
-      category: pkg.category,
-      source: pkg.source,
-      state: pkg.state,
-      author: pkg.author
-    })),
-    registryPackages: registryPackages.map((pkg: any) => ({
-      name: pkg.name,
-      displayName: pkg.displayName,
-      version: pkg.version,
-      description: pkg.description,
-      category: pkg.category,
-      source: pkg.source,
-      state: pkg.state,
-      author: pkg.author
-    }))
-  };
-
   return {
     contents: [
       {
         uri: resourceUri,
-        text: JSON.stringify(packagesData, null, 2),
+        text: JSON.stringify(response, null, 2),
         mimeType: resourceMimeType
       }
     ]

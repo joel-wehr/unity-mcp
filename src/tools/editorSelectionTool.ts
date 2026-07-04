@@ -90,7 +90,7 @@ async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolRes
 
   return {
     content: [{
-      type: response.type,
+      type: "text" as const,
       text: resultText
     }]
   };

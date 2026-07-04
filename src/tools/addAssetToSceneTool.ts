@@ -79,8 +79,8 @@ async function toolHandler(mcpUnity: McpUnity, params: any) {
 
   return {
     content: [{
-      type: response.type,
-      text: response.message || `Successfully added asset to scene`
+      type: "text" as const,
+      text: JSON.stringify(response, null, 2)
     }]
   };
 }

@@ -11,14 +11,7 @@ const toolDescription = 'Updates properties of a GameObject in the Unity scene b
 const paramsSchema = z.object({
   instanceId: z.number().optional().describe('The instance ID of the GameObject to update'),
   objectPath: z.string().optional().describe('The path of the GameObject in the hierarchy to update (alternative to instanceId)'),
-  gameObjectData: z.object({
-    name: z.string().optional().describe('New name for the GameObject'),
-    tag: z.string().optional().describe('New tag for the GameObject'),
-    layer: z.number().int().optional().describe('New layer for the GameObject'),
-    activeSelf: z.boolean().optional().describe('Set the active state of the GameObject (GameObject.SetActive(value))'),
-    isStatic: z.boolean().optional().describe('Set the static state of the GameObject (GameObject.isStatic = value)'),
-  }).describe('An object containing the fields to update on the GameObject. If the GameObject does not exist at objectPath, it will be created.')
-    .refine(data => Object.keys(data).length > 0, { message: 'gameObjectData must contain at least one property to update.' }),
+  gameObjectData: z.record(z.any()).describe('An object containing the fields to update on the GameObject (name, tag, layer, activeSelf, isStatic). If the GameObject does not exist at objectPath, it will be created.'),
 });
 
 /**
@@ -92,8 +85,8 @@ async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolRes
 
       return {
         content: [{
-          type: response.type,
-          text: response.message || `Successfully updated the GameObject with ${targetDescription}`
+          type: "text" as const,
+          text: JSON.stringify(response, null, 2)
         }]
       };
 }

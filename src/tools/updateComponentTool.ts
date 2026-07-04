@@ -95,8 +95,8 @@ async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolRes
 
   return {
     content: [{
-      type: response.type,
-      text: response.message || `Successfully updated component on GameObject with ${targetDescription}`
+      type: "text" as const,
+      text: JSON.stringify(response, null, 2)
     }]
   };
 }

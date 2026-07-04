@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "unity-mcp": {
+      "command": "node",
+      "args": ["C:\\Users\\joelw\\joelwehr.com\\GitHub\\unity-mcp\\build\\index.js"],
+      "env": {
+        "UNITY_PORT": "8090",
+        "UNITY_HOST": "localhost",
+        "LOGGING": "true"
+      }
+    }
+  }
+}

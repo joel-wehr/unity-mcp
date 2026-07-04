@@ -27,11 +27,11 @@
     "ai",
     "assistant"
   ],
-  "author": "Joel Williams",
+  "author": "Joel Wehr",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joelwilliams/unity-mcp.git"
+    "url": "https://github.com/joelwehr/unity-mcp.git"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

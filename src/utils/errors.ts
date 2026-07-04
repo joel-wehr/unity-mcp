@@ -5,7 +5,16 @@ export enum ErrorType {
   VALIDATION = 'validation_error',
   INTERNAL = 'internal_error',
   TIMEOUT = 'timeout_error',
-  RAG_ERROR = 'rag_error'
+  RAG_ERROR = 'rag_error',
+  // XREAL-specific error types
+  XREAL_SDK_NOT_FOUND = 'xreal_sdk_not_found',
+  XREAL_DEVICE_NOT_CONNECTED = 'xreal_device_not_connected',
+  XREAL_TRACKING_LOST = 'xreal_tracking_lost',
+  XREAL_PERMISSION_DENIED = 'xreal_permission_denied',
+  XREAL_FEATURE_NOT_SUPPORTED = 'xreal_feature_not_supported',
+  XREAL_CONFIGURATION_ERROR = 'xreal_configuration_error',
+  BUILD_ERROR = 'build_error',
+  ADB_ERROR = 'adb_error'
 }
 
 export class McpUnityError extends Error {

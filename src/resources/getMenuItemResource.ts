@@ -63,7 +63,7 @@ async function resourceHandler(mcpUnity: McpUnity): Promise<ReadResourceResult> 
     contents: [{
       uri: resourceUri,
       mimeType: resourceMimeType,
-      text: JSON.stringify(response.menuItems, null, 2)
+      text: JSON.stringify(response, null, 2)
     }]
   };
 }

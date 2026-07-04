@@ -65,8 +65,8 @@ async function toolHandler(mcpUnity: McpUnity, params: any): Promise<CallToolRes
 
   return {
     content: [{
-      type: response.type,
-      text: response.message || `Play mode action completed`
+      type: "text" as const,
+      text: JSON.stringify(response, null, 2)
     }]
   };
 }

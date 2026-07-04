@@ -83,8 +83,8 @@ async function toolHandler(
   return {
     content: [
       {
-        type: "text",
-        text: JSON.stringify(response, null, 2),
+        type: "text" as const,
+        text: JSON.stringify(response, null, 2)
       },
     ],
   };

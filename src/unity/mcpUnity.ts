@@ -18,7 +18,23 @@ interface UnityRequest {
   id?: string;
   method: string;
   params: any;
+  timeout?: number; // Per-request timeout override in ms
 }
+
+// Methods that are known to take a long time
+const LONG_RUNNING_METHODS: Record<string, number> = {
+  'build_pipeline': 300000,    // 5 minutes for builds/platform switches
+  'recompile_scripts': 60000,  // 60 seconds for script compilation
+  'execute_code': 60000,       // 60 seconds for code execution (includes compilation)
+  'watch_console': 300000,     // 5 minutes for watch operations
+  'asset_import': 120000,      // 2 minutes for asset imports
+  'lighting': 300000,          // 5 minutes for lightmap baking
+  'run_tests': 300000,         // 5 minutes for test runs
+  'terrain': 120000,           // 2 minutes for terrain operations (heightmap, painting)
+  'navmesh': 120000,           // 2 minutes for NavMesh baking
+  'profiler': 60000,           // 60 seconds for profiler data collection
+  'playtest': 30000,           // 30 seconds for playtest operations (screenshot, observe)
+};
 
 interface UnityResponse {
   jsonrpc: string;
@@ -259,15 +275,20 @@ export class McpUnity {
         return;
       }
 
+      // Determine timeout: per-request override > method-specific > default
+      const effectiveTimeout = request.timeout
+        || LONG_RUNNING_METHODS[request.method]
+        || this.requestTimeout;
+
       // Create timeout for the request
       const timeout = setTimeout(() => {
         if (this.pendingRequests.has(requestId)) {
-          this.logger.error(`Request ${requestId} timed out after ${this.requestTimeout}ms`);
+          this.logger.error(`Request ${requestId} (${request.method}) timed out after ${effectiveTimeout}ms`);
           this.pendingRequests.delete(requestId);
-          reject(new McpUnityError(ErrorType.TIMEOUT, 'Request timed out'));
+          reject(new McpUnityError(ErrorType.TIMEOUT, `Request timed out after ${effectiveTimeout / 1000}s`));
         }
         this.reconnect();
-      }, this.requestTimeout);
+      }, effectiveTimeout);
 
       // Store pending request
       this.pendingRequests.set(requestId, {

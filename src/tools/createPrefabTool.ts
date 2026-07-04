@@ -73,8 +73,8 @@ async function toolHandler(mcpUnity: McpUnity, params: any) {
 
   return {
     content: [{
-      type: response.type,
-      text: response.message || `Successfully created prefab`
+      type: "text" as const,
+      text: JSON.stringify(response, null, 2)
     }],
     // Include the prefab path in the result for programmatic access
     data: {
