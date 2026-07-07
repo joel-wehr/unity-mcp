@@ -1,6 +1,6 @@
 # Unity MCP — PM Memory
 
-_Last updated: 2026-07-04 (after P0b–d: structured output, progress+cancel, error hygiene, SDK 1.29)_
+_Last updated: 2026-07-07 (/pm run: reconciled memory w/ repo — clean, counts verified; triage loop restarted)_
 
 ## ⚙️ ON /pm STARTUP — DO THIS FIRST (every /pm run)
 Auto-start the GitHub issue-triage loop for this session (it's session-only and dies
@@ -30,7 +30,7 @@ risk is low, but do a live round-trip on the testbed to confirm get_gameobject /
 find_gameobjects / get_console_logs / run_tests don't trip output validation → isError.
 
 ## Recurring issue triage (set up 2026-07-04)
-An in-session CronCreate job (current id **9413e61a**, cron `*/15 * * * *` — **every 15 min**)
+An in-session CronCreate job (current id **1354eb92**, cron `*/15 * * * *` — **every 15 min**)
 polls open issues on `joel-wehr/unity-mcp` and triages per the mandate (implement+push+close,
 or Radar+summarize if it needs human judgment). Uses local `gh` auth + Radar + Unity testbed.
 **Auto-started on every /pm run** (see "ON /pm STARTUP" at top). **Session-only: dies when the
